@@ -14,53 +14,14 @@ export const login = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: rows, error } = await supabaseAdmin.rpc as unknown as never;
-    void rows;
-    void error;
-    // Verify with pgcrypto via a raw select
-    const { data: user, error: qErr } = await supabaseAdmin
-      .from("utilizadores" as never)
-      .select("id, nome, papel, ativo, password_hash")
-      .eq("nome", data.nome)
-      .maybeSingle();
-    if (qErr) throw new Error("Erro ao consultar utilizador");
-    if (!user) throw new Error("Credenciais inválidas");
-    const u = user as {
-      id: string;
-      nome: string;
-      papel: "admin" | "operador";
-      ativo: boolean;
-      password_hash: string;
-    };
-    if (!u.ativo) throw new Error("Utilizador desativado");
-    // Verify password using pgcrypto
-    const { data: check, error: cErr } = await supabaseAdmin.rpc("verify_password" as never, {
+    const { data: rows, error } = await supabaseAdmin.rpc("verify_password", {
       p_nome: data.nome,
       p_password: data.password,
     } as never);
-    // Fallback: if verify_password RPC doesn't exist, do it via a select
-    let ok = false;
-    if (!cErr && check === true) ok = true;
-    else {
-      const { data: verify } = await supabaseAdmin
-        .from("utilizadores" as never)
-        .select("id")
-        .eq("nome", data.nome)
-        .filter("password_hash", "eq", u.password_hash)
-        .maybeSingle();
-      // pgcrypto: crypt(p, hash) = hash. We need SQL. Use a safer path:
-      void verify;
-      const { supabaseAdmin: admin2 } = await import("@/integrations/supabase/client.server");
-      const res = await admin2
-        .schema("public")
-        .rpc("verify_password" as never, {
-          p_nome: data.nome,
-          p_password: data.password,
-        } as never);
-      if (!res.error && res.data === true) ok = true;
-    }
-    if (!ok) throw new Error("Credenciais inválidas");
-
+    if (error) throw new Error(error.message);
+    const user = Array.isArray(rows) ? rows[0] : null;
+    if (!user) throw new Error("Credenciais inválidas");
+    const u = user as { id: string; nome: string; papel: "admin" | "operador" };
     const session = await useSession<AppSession>(sessionConfig);
     await session.update({ userId: u.id, nome: u.nome, papel: u.papel });
     return { id: u.id, nome: u.nome, papel: u.papel };
@@ -90,7 +51,7 @@ export const changePassword = createServerFn({ method: "POST" })
     const session = await useSession<AppSession>(sessionConfig);
     if (!session.data?.userId) throw new Error("Sem sessão");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.rpc("set_password" as never, {
+    const { error } = await supabaseAdmin.rpc("set_password", {
       p_id: session.data.userId,
       p_password: data.password,
     } as never);

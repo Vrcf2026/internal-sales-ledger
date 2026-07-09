@@ -299,7 +299,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      set_password: {
+        Args: { p_id: string; p_password: string }
+        Returns: undefined
+      }
+      verify_password: {
+        Args: { p_nome: string; p_password: string }
+        Returns: {
+          ativo: boolean
+          id: string
+          nome: string
+          papel: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
