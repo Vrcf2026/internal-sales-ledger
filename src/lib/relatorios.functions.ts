@@ -21,7 +21,8 @@ export const relatorioIntervalo = createServerFn({ method: "GET" })
       .from("registos" as never)
       .select("total, metodo_pagamento, data")
       .gte("data", data.de)
-      .lte("data", data.ate);
+      .lte("data", data.ate)
+      .eq("anulado", false);
     const { data: caixas } = await supabaseAdmin
       .from("caixa_diario" as never)
       .select("id, data, saldo_inicial, saldo_final")

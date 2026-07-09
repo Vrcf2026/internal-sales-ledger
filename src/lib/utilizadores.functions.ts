@@ -1,6 +1,21 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
+// Lista leve de utilizadores ativos, para escolher o vendedor numa venda.
+// Acessível a qualquer sessão válida (não só admin) — não expõe password_hash.
+export const listVendedores = createServerFn({ method: "GET" }).handler(async () => {
+  const { requireSession } = await import("../lib/guard.server");
+  await requireSession();
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin
+    .from("utilizadores" as never)
+    .select("id, nome")
+    .eq("ativo", true)
+    .order("nome", { ascending: true });
+  if (error) throw new Error(error.message);
+  return data ?? [];
+});
+
 export const listUtilizadores = createServerFn({ method: "GET" }).handler(async () => {
   const { requireAdmin } = await import("../lib/guard.server");
   await requireAdmin();

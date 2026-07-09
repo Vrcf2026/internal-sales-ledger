@@ -157,40 +157,70 @@ export type Database = {
       };
       registos: {
         Row: {
+          anulado: boolean;
+          anulado_em: string | null;
+          anulado_motivo: string | null;
+          anulado_por: string | null;
           caixa_diario_id: string;
           cliente_id: string | null;
           created_at: string | null;
           data: string;
           descricao: string | null;
+          editado_em: string | null;
+          editado_por: string | null;
+          faturado: boolean;
+          faturado_em: string | null;
+          faturado_por: string | null;
           id: string;
           metodo_pagamento: string;
           numero: number;
           total: number;
           utilizador_id: string;
+          vendedor_id: string | null;
         };
         Insert: {
+          anulado?: boolean;
+          anulado_em?: string | null;
+          anulado_motivo?: string | null;
+          anulado_por?: string | null;
           caixa_diario_id: string;
           cliente_id?: string | null;
           created_at?: string | null;
           data?: string;
           descricao?: string | null;
+          editado_em?: string | null;
+          editado_por?: string | null;
+          faturado?: boolean;
+          faturado_em?: string | null;
+          faturado_por?: string | null;
           id?: string;
           metodo_pagamento: string;
           numero?: number;
           total?: number;
           utilizador_id: string;
+          vendedor_id?: string | null;
         };
         Update: {
+          anulado?: boolean;
+          anulado_em?: string | null;
+          anulado_motivo?: string | null;
+          anulado_por?: string | null;
           caixa_diario_id?: string;
           cliente_id?: string | null;
           created_at?: string | null;
           data?: string;
           descricao?: string | null;
+          editado_em?: string | null;
+          editado_por?: string | null;
+          faturado?: boolean;
+          faturado_em?: string | null;
+          faturado_por?: string | null;
           id?: string;
           metodo_pagamento?: string;
           numero?: number;
           total?: number;
           utilizador_id?: string;
+          vendedor_id?: string | null;
         };
         Relationships: [
           {
@@ -210,6 +240,34 @@ export type Database = {
           {
             foreignKeyName: "registos_utilizador_id_fkey";
             columns: ["utilizador_id"];
+            isOneToOne: false;
+            referencedRelation: "utilizadores";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "registos_vendedor_id_fkey";
+            columns: ["vendedor_id"];
+            isOneToOne: false;
+            referencedRelation: "utilizadores";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "registos_faturado_por_fkey";
+            columns: ["faturado_por"];
+            isOneToOne: false;
+            referencedRelation: "utilizadores";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "registos_anulado_por_fkey";
+            columns: ["anulado_por"];
+            isOneToOne: false;
+            referencedRelation: "utilizadores";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "registos_editado_por_fkey";
+            columns: ["editado_por"];
             isOneToOne: false;
             referencedRelation: "utilizadores";
             referencedColumns: ["id"];

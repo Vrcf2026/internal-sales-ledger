@@ -1,11 +1,13 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { me } from "@/lib/auth.functions";
+import { listVendedores } from "@/lib/utilizadores.functions";
 import { getEstadoCaixa } from "@/lib/caixa.functions";
 import { listCatalogo } from "@/lib/catalogo.functions";
 import { listClientes } from "@/lib/clientes.functions";
-import { criarRegisto, listRegistosHoje } from "@/lib/vendas.functions";
+import { criarRegisto, listRegistosHoje, marcarFaturado } from "@/lib/vendas.functions";
 import { formatEUR, metodoLabel } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,27 +45,47 @@ function novaLinha(): Linha {
 }
 
 function VendasPage() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const emDetalhe = pathname !== "/vendas";
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const meQuery = useQuery({ queryKey: ["me"], queryFn: () => me() });
   const estado = useQuery({ queryKey: ["estado-caixa"], queryFn: () => getEstadoCaixa() });
   const catalogo = useQuery({
     queryKey: ["catalogo", true],
     queryFn: () => listCatalogo({ data: { apenasAtivos: true } }),
   });
+  const vendedores = useQuery({ queryKey: ["vendedores"], queryFn: () => listVendedores() });
   const clientes = useQuery({ queryKey: ["clientes"], queryFn: () => listClientes() });
   const registos = useQuery({
     queryKey: ["registos-hoje"],
     queryFn: () => listRegistosHoje(),
   });
   const doCriar = useServerFn(criarRegisto);
+  const doMarcarFaturado = useServerFn(marcarFaturado);
+
+  async function toggleFaturado(id: string, faturado: boolean) {
+    try {
+      await doMarcarFaturado({ data: { id, faturado } });
+      await qc.invalidateQueries({ queryKey: ["registos-hoje"] });
+      toast.success(faturado ? "Marcado como faturado" : "Marcado por faturar");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro");
+    }
+  }
 
   const [linhas, setLinhas] = useState<Linha[]>([novaLinha()]);
   const [metodo, setMetodo] = useState<"dinheiro" | "multibanco" | "mbway">("dinheiro");
+  const [vendedorId, setVendedorId] = useState<string>("");
   const [clienteId, setClienteId] = useState<string>("");
   const [clienteNovo, setClienteNovo] = useState({ nome: "", nif: "", telefone: "" });
   const [showNovoCliente, setShowNovoCliente] = useState(false);
   const [descricao, setDescricao] = useState("");
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (meQuery.data && !vendedorId) setVendedorId(meQuery.data.id);
+  }, [meQuery.data, vendedorId]);
 
   const total = useMemo(
     () => linhas.reduce((a, l) => a + l.quantidade * l.preco_unitario, 0),
@@ -95,10 +117,15 @@ function VendasPage() {
       toast.error("Adicione pelo menos uma linha.");
       return;
     }
+    if (!vendedorId) {
+      toast.error("Escolha o vendedor.");
+      return;
+    }
     setSaving(true);
     try {
       const res = await doCriar({
         data: {
+          vendedor_id: vendedorId,
           cliente_id: clienteId || null,
           cliente_novo:
             !clienteId && showNovoCliente
@@ -135,6 +162,10 @@ function VendasPage() {
     } finally {
       setSaving(false);
     }
+  }
+
+  if (emDetalhe) {
+    return <Outlet />;
   }
 
   if (!estado.data?.aberta) {
@@ -259,6 +290,25 @@ function VendasPage() {
       <aside className="space-y-4">
         <div className="rounded-lg border bg-card p-4 space-y-3">
           <div>
+            <Label>Vendedor</Label>
+            <Select value={vendedorId} onValueChange={setVendedorId}>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Escolher vendedor" />
+              </SelectTrigger>
+              <SelectContent>
+                {(vendedores.data ?? []).map((v) => {
+                  const row = v as { id: string; nome: string };
+                  return (
+                    <SelectItem key={row.id} value={row.id}>
+                      {row.nome}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
             <Label>Cliente (opcional)</Label>
             <Select
               value={clienteId || "__none"}
@@ -353,20 +403,45 @@ function VendasPage() {
                 numero: number;
                 total: number;
                 metodo_pagamento: string;
+                faturado: boolean;
+                anulado: boolean;
+                vendedor: { nome: string } | null;
               };
               return (
-                <Link
+                <div
                   key={row.id}
-                  to="/vendas/$numero"
-                  params={{ numero: String(row.numero) }}
-                  className="flex items-center justify-between px-4 py-2 text-sm hover:bg-muted/50"
+                  className={
+                    "flex items-center gap-2 px-4 py-2 text-sm " + (row.anulado ? "opacity-50" : "")
+                  }
                 >
-                  <span className="font-mono text-muted-foreground">#{row.numero}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {metodoLabel(row.metodo_pagamento)}
-                  </span>
-                  <span className="font-medium">{formatEUR(row.total)}</span>
-                </Link>
+                  <Link
+                    to="/vendas/$numero"
+                    params={{ numero: String(row.numero) }}
+                    className="flex-1 flex items-center justify-between hover:opacity-70 min-w-0"
+                  >
+                    <span className="font-mono text-muted-foreground shrink-0">#{row.numero}</span>
+                    <span className="text-xs text-muted-foreground truncate px-2">
+                      {row.vendedor?.nome ?? metodoLabel(row.metodo_pagamento)}
+                    </span>
+                    <span className={"font-medium shrink-0 " + (row.anulado ? "line-through" : "")}>
+                      {formatEUR(row.total)}
+                    </span>
+                  </Link>
+                  <button
+                    type="button"
+                    disabled={row.anulado}
+                    onClick={() => toggleFaturado(row.id, !row.faturado)}
+                    title={row.faturado ? "Marcar por faturar" : "Marcar como faturado"}
+                    className={
+                      "shrink-0 text-[10px] font-medium uppercase tracking-wider rounded px-1.5 py-0.5 border " +
+                      (row.faturado
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                        : "bg-muted text-muted-foreground border-transparent hover:border-border")
+                    }
+                  >
+                    {row.faturado ? "Faturado" : "Faturar"}
+                  </button>
+                </div>
               );
             })}
             {(registos.data ?? []).length === 0 && (

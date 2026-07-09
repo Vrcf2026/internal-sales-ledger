@@ -20,7 +20,8 @@ export const getEstadoCaixa = createServerFn({ method: "GET" }).handler(async ()
   const { data: registos } = await supabaseAdmin
     .from("registos" as never)
     .select("total, metodo_pagamento")
-    .eq("caixa_diario_id", c.id);
+    .eq("caixa_diario_id", c.id)
+    .eq("anulado", false);
   const { data: saidas } = await supabaseAdmin
     .from("saidas_caixa" as never)
     .select("valor, tipo")
