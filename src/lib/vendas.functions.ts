@@ -101,9 +101,27 @@ export const listRegistosHoje = createServerFn({ method: "GET" }).handler(async 
   return data ?? [];
 });
 
+export type RegistoDetalhe = {
+  id: string;
+  numero: number;
+  data: string;
+  total: number;
+  metodo_pagamento: "dinheiro" | "multibanco" | "mbway";
+  descricao: string | null;
+  created_at: string;
+  utilizadores: { nome: string } | null;
+  clientes: { nome: string | null; nif: string | null; telefone: string | null } | null;
+  registo_itens: {
+    descricao: string;
+    quantidade: number;
+    preco_unitario: number;
+    subtotal: number;
+  }[];
+};
+
 export const getRegisto = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ numero: z.number().int().positive() }).parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data }): Promise<RegistoDetalhe> => {
     const { requireSession } = await import("../lib/guard.server");
     await requireSession();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -116,5 +134,5 @@ export const getRegisto = createServerFn({ method: "GET" })
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!reg) throw new Error("Registo não encontrado");
-    return reg as unknown as Record<string, unknown>;
+    return reg as unknown as RegistoDetalhe;
   });
