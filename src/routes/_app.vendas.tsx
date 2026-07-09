@@ -75,9 +75,8 @@ function VendasPage() {
   }
 
   function escolheProduto(key: string, catId: string) {
-    const p = (catalogo.data ?? []).find(
-      (c) => (c as { id: string }).id === catId,
-    ) as { id: string; nome: string; preco: number } | undefined;
+    const p = (catalogo.data ?? []).find((c) => (c as { id: string }).id === catId) as
+      { id: string; nome: string; preco: number } | undefined;
     if (!p) return;
     atualizaLinha(key, {
       catalogo_id: p.id,
@@ -211,9 +210,7 @@ function VendasPage() {
                   step="0.01"
                   min="0"
                   value={l.quantidade}
-                  onChange={(e) =>
-                    atualizaLinha(l.key, { quantidade: Number(e.target.value) })
-                  }
+                  onChange={(e) => atualizaLinha(l.key, { quantidade: Number(e.target.value) })}
                   className="text-right"
                 />
                 <Input
@@ -221,9 +218,7 @@ function VendasPage() {
                   step="0.01"
                   min="0"
                   value={l.preco_unitario}
-                  onChange={(e) =>
-                    atualizaLinha(l.key, { preco_unitario: Number(e.target.value) })
-                  }
+                  onChange={(e) => atualizaLinha(l.key, { preco_unitario: Number(e.target.value) })}
                   className="text-right"
                 />
                 <div className="text-right font-medium">

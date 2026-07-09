@@ -44,7 +44,11 @@ export const criarRegisto = createServerFn({ method: "POST" })
       if (cn.nome || cn.nif || cn.telefone) {
         const { data: c, error } = await supabaseAdmin
           .from("clientes" as never)
-          .insert({ nome: cn.nome || null, nif: cn.nif || null, telefone: cn.telefone || null } as never)
+          .insert({
+            nome: cn.nome || null,
+            nif: cn.nif || null,
+            telefone: cn.telefone || null,
+          } as never)
           .select("id")
           .single();
         if (error) throw new Error(error.message);
@@ -52,10 +56,7 @@ export const criarRegisto = createServerFn({ method: "POST" })
       }
     }
 
-    const total = data.itens.reduce(
-      (acc, it) => acc + it.quantidade * it.preco_unitario,
-      0,
-    );
+    const total = data.itens.reduce((acc, it) => acc + it.quantidade * it.preco_unitario, 0);
 
     const { data: reg, error: regErr } = await supabaseAdmin
       .from("registos" as never)

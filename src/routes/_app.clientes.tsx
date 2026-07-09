@@ -114,7 +114,12 @@ function ClientesPage() {
         </div>
         <div className="divide-y">
           {(q.data ?? []).map((row) => {
-            const r = row as { id: string; nome: string | null; nif: string | null; telefone: string | null };
+            const r = row as {
+              id: string;
+              nome: string | null;
+              nif: string | null;
+              telefone: string | null;
+            };
             return (
               <div
                 key={r.id}
@@ -146,9 +151,7 @@ function ClientesPage() {
             );
           })}
           {(q.data ?? []).length === 0 && (
-            <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-              Sem clientes.
-            </div>
+            <div className="px-4 py-8 text-center text-sm text-muted-foreground">Sem clientes.</div>
           )}
         </div>
       </div>

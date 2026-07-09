@@ -1,6 +1,6 @@
 // Small utilities shared across pages
 export function formatEUR(v: number | string | null | undefined): string {
-  const n = typeof v === "string" ? Number(v) : v ?? 0;
+  const n = typeof v === "string" ? Number(v) : (v ?? 0);
   return new Intl.NumberFormat("pt-PT", {
     style: "currency",
     currency: "EUR",

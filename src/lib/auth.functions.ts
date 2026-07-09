@@ -14,17 +14,40 @@ export const login = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: bloqueado } = await supabaseAdmin.rpc("esta_bloqueado", {
+      p_nome: data.nome,
+    } as never);
+    if (bloqueado) {
+      throw new Error("Demasiadas tentativas falhadas. Tente novamente dentro de 5 minutos.");
+    }
+
     const { data: rows, error } = await supabaseAdmin.rpc("verify_password", {
       p_nome: data.nome,
       p_password: data.password,
     } as never);
     if (error) throw new Error(error.message);
     const user = Array.isArray(rows) ? rows[0] : null;
-    if (!user) throw new Error("Credenciais inválidas");
-    const u = user as { id: string; nome: string; papel: "admin" | "operador" };
+    if (!user) {
+      await supabaseAdmin.rpc("registar_falha_login", { p_nome: data.nome } as never);
+      throw new Error("Credenciais inválidas");
+    }
+    await supabaseAdmin.rpc("limpar_falhas_login", { p_nome: data.nome } as never);
+
+    const u = user as {
+      id: string;
+      nome: string;
+      papel: "admin" | "operador";
+      deve_trocar_password: boolean;
+    };
     const session = await useSession<AppSession>(sessionConfig);
     await session.update({ userId: u.id, nome: u.nome, papel: u.papel });
-    return { id: u.id, nome: u.nome, papel: u.papel };
+    return {
+      id: u.id,
+      nome: u.nome,
+      papel: u.papel,
+      deveTrocarPassword: u.deve_trocar_password,
+    };
   });
 
 export const logout = createServerFn({ method: "POST" }).handler(async () => {
@@ -44,9 +67,7 @@ export const me = createServerFn({ method: "GET" }).handler(async () => {
 });
 
 export const changePassword = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) =>
-    z.object({ password: z.string().min(4).max(200) }).parse(d),
-  )
+  .inputValidator((d: unknown) => z.object({ password: z.string().min(4).max(200) }).parse(d))
   .handler(async ({ data }) => {
     const session = await useSession<AppSession>(sessionConfig);
     if (!session.data?.userId) throw new Error("Sem sessão");
@@ -56,5 +77,9 @@ export const changePassword = createServerFn({ method: "POST" })
       p_password: data.password,
     } as never);
     if (error) throw new Error(error.message);
+    await supabaseAdmin
+      .from("utilizadores" as never)
+      .update({ deve_trocar_password: false } as never)
+      .eq("id", session.data.userId);
     return { ok: true };
   });

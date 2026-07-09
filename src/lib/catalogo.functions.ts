@@ -2,9 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 export const listCatalogo = createServerFn({ method: "GET" })
-  .inputValidator((d: unknown) =>
-    z.object({ apenasAtivos: z.boolean().optional() }).parse(d ?? {}),
-  )
+  .inputValidator((d: unknown) => z.object({ apenasAtivos: z.boolean().optional() }).parse(d ?? {}))
   .handler(async ({ data }) => {
     const { requireSession } = await import("../lib/guard.server");
     await requireSession();

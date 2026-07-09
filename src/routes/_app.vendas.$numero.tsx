@@ -67,24 +67,18 @@ function TalaoPage() {
             <div>{new Date(r.created_at).toLocaleString("pt-PT")}</div>
           </div>
           <div>
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">
-              Operador
-            </div>
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">Operador</div>
             <div>{r.utilizadores?.nome ?? "—"}</div>
           </div>
           <div className="text-right">
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">
-              Pagamento
-            </div>
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">Pagamento</div>
             <div>{metodoLabel(r.metodo_pagamento)}</div>
           </div>
         </div>
 
         {r.clientes && (r.clientes.nome || r.clientes.nif || r.clientes.telefone) && (
           <div className="py-3 border-b text-sm">
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">
-              Cliente
-            </div>
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">Cliente</div>
             <div>{r.clientes.nome}</div>
             {r.clientes.nif && (
               <div className="text-xs text-muted-foreground">NIF: {r.clientes.nif}</div>
@@ -117,9 +111,7 @@ function TalaoPage() {
         </div>
 
         {r.descricao && (
-          <div className="mt-3 pt-3 border-t text-xs text-muted-foreground">
-            {r.descricao}
-          </div>
+          <div className="mt-3 pt-3 border-t text-xs text-muted-foreground">{r.descricao}</div>
         )}
 
         <div className="mt-6 text-center text-[10px] uppercase tracking-widest text-muted-foreground">

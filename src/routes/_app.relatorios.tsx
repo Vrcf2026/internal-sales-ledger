@@ -77,9 +77,7 @@ function RelatoriosPage() {
               saldo_final: number | null;
             };
             const diff =
-              row.saldo_final == null
-                ? null
-                : Number(row.saldo_final) - Number(row.saldo_inicial);
+              row.saldo_final == null ? null : Number(row.saldo_final) - Number(row.saldo_inicial);
             return (
               <div
                 key={row.id}

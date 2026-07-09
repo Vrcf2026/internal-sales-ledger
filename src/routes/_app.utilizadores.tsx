@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { me } from "@/lib/auth.functions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -28,6 +29,10 @@ import {
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/utilizadores")({
+  beforeLoad: async () => {
+    const user = await me();
+    if (!user || user.papel !== "admin") throw redirect({ to: "/" });
+  },
   component: UtilizadoresPage,
 });
 
@@ -166,9 +171,7 @@ function UtilizadoresPage() {
                 key={u.id}
                 className="grid grid-cols-1 md:grid-cols-[1fr_140px_100px_260px] gap-2 px-4 py-2 items-center text-sm"
               >
-                <div className={u.ativo ? "font-medium" : "text-muted-foreground"}>
-                  {u.nome}
-                </div>
+                <div className={u.ativo ? "font-medium" : "text-muted-foreground"}>{u.nome}</div>
                 <div>
                   <Select
                     value={u.papel}
@@ -196,11 +199,7 @@ function UtilizadoresPage() {
                   >
                     Password
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => toggleAtivo(u.id, !u.ativo)}
-                  >
+                  <Button size="sm" variant="ghost" onClick={() => toggleAtivo(u.id, !u.ativo)}>
                     {u.ativo ? "Desativar" : "Ativar"}
                   </Button>
                 </div>
@@ -217,11 +216,7 @@ function UtilizadoresPage() {
           </DialogHeader>
           <div className="space-y-1.5">
             <Label>Nova password</Label>
-            <Input
-              type="password"
-              value={pwValue}
-              onChange={(e) => setPwValue(e.target.value)}
-            />
+            <Input type="password" value={pwValue} onChange={(e) => setPwValue(e.target.value)} />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setPwOpen(false)}>

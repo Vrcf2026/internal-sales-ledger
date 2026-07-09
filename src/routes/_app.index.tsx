@@ -68,15 +68,10 @@ function Dashboard() {
         <Stat label="MB Way" value={formatEUR(t?.mbway ?? 0)} />
         <Stat label="Sangrias" value={formatEUR(t?.sangrias ?? 0)} muted />
         <Stat label="Despesas" value={formatEUR(t?.despesas ?? 0)} muted />
-        <Stat
-          label="Saldo esperado"
-          value={formatEUR(t?.saldoEsperado ?? 0)}
-        />
+        <Stat label="Saldo esperado" value={formatEUR(t?.saldoEsperado ?? 0)} />
         <Stat
           label="Total vendido"
-          value={formatEUR(
-            (t?.dinheiro ?? 0) + (t?.multibanco ?? 0) + (t?.mbway ?? 0),
-          )}
+          value={formatEUR((t?.dinheiro ?? 0) + (t?.multibanco ?? 0) + (t?.mbway ?? 0))}
         />
       </div>
 
@@ -106,13 +101,9 @@ function Dashboard() {
                 className="flex items-center justify-between px-4 py-3 hover:bg-muted/50"
               >
                 <div className="flex items-center gap-4">
-                  <div className="font-mono text-sm text-muted-foreground w-14">
-                    #{row.numero}
-                  </div>
+                  <div className="font-mono text-sm text-muted-foreground w-14">#{row.numero}</div>
                   <div className="text-sm">
-                    <div className="font-medium">
-                      {row.clientes?.nome || "Cliente ocasional"}
-                    </div>
+                    <div className="font-medium">{row.clientes?.nome || "Cliente ocasional"}</div>
                     <div className="text-xs text-muted-foreground">
                       {metodoLabel(row.metodo_pagamento)} · {row.utilizadores?.nome} ·{" "}
                       {new Date(row.created_at).toLocaleTimeString("pt-PT", {

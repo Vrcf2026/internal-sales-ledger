@@ -129,7 +129,9 @@ function CaixaPage() {
                 Saldo inicial
               </div>
               <div className="mt-1 text-xl font-semibold">
-                {formatEUR((estado.data?.caixa as { saldo_inicial: number } | null)?.saldo_inicial ?? 0)}
+                {formatEUR(
+                  (estado.data?.caixa as { saldo_inicial: number } | null)?.saldo_inicial ?? 0,
+                )}
               </div>
             </div>
             <div className="rounded-lg border bg-card p-4">
@@ -139,9 +141,7 @@ function CaixaPage() {
               <div className="mt-1 text-xl font-semibold">{formatEUR(t?.dinheiro ?? 0)}</div>
             </div>
             <div className="rounded-lg border bg-card p-4">
-              <div className="text-xs uppercase tracking-wider text-muted-foreground">
-                Saídas
-              </div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground">Saídas</div>
               <div className="mt-1 text-xl font-semibold">
                 {formatEUR((t?.sangrias ?? 0) + (t?.despesas ?? 0))}
               </div>
@@ -150,9 +150,7 @@ function CaixaPage() {
               <div className="text-xs uppercase tracking-wider text-muted-foreground">
                 Saldo esperado
               </div>
-              <div className="mt-1 text-xl font-semibold">
-                {formatEUR(t?.saldoEsperado ?? 0)}
-              </div>
+              <div className="mt-1 text-xl font-semibold">{formatEUR(t?.saldoEsperado ?? 0)}</div>
             </div>
           </div>
 
@@ -203,9 +201,7 @@ function CaixaPage() {
               </p>
               <div className="mt-4 space-y-2">
                 <Label>Saldo esperado</Label>
-                <div className="text-lg font-semibold">
-                  {formatEUR(t?.saldoEsperado ?? 0)}
-                </div>
+                <div className="text-lg font-semibold">{formatEUR(t?.saldoEsperado ?? 0)}</div>
               </div>
               <div className="mt-3 space-y-1.5">
                 <Label htmlFor="sf">Saldo contado (€)</Label>
@@ -218,11 +214,7 @@ function CaixaPage() {
                   onChange={(e) => setSaldoFinal(e.target.value)}
                 />
               </div>
-              <Button
-                variant="outline"
-                onClick={handleFechar}
-                className="mt-4 w-full"
-              >
+              <Button variant="outline" onClick={handleFechar} className="mt-4 w-full">
                 Fechar caixa
               </Button>
             </div>

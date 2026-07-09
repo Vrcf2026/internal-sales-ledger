@@ -81,9 +81,7 @@ function AppLayout() {
             {user && (
               <div className="text-xs text-right leading-tight">
                 <div className="font-medium text-foreground">{user.nome}</div>
-                <div className="text-muted-foreground uppercase tracking-wider">
-                  {user.papel}
-                </div>
+                <div className="text-muted-foreground uppercase tracking-wider">{user.papel}</div>
               </div>
             )}
             <Button variant="outline" size="sm" onClick={handleLogout}>

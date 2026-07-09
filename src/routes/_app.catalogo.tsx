@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { me } from "@/lib/auth.functions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -25,6 +26,10 @@ import {
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/catalogo")({
+  beforeLoad: async () => {
+    const user = await me();
+    if (!user || user.papel !== "admin") throw redirect({ to: "/" });
+  },
   component: CatalogoPage,
 });
 
