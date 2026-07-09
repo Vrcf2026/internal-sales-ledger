@@ -63,7 +63,7 @@ function AppLayout() {
                 return (
                   <Link
                     key={n.to}
-                    to={n.to}
+                    to={n.to as never}
                     className={
                       "px-3 py-1.5 rounded-md text-sm transition-colors " +
                       (active
@@ -97,7 +97,7 @@ function AppLayout() {
             return (
               <Link
                 key={n.to}
-                to={n.to}
+                to={n.to as never}
                 className={
                   "px-2.5 py-1 rounded-md text-xs " +
                   (active
