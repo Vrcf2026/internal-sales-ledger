@@ -21,7 +21,8 @@ export const Route = createFileRoute("/_app")({
   component: AppLayout,
 });
 
-const NAV = [
+type NavItem = { to: string; label: string; exact?: boolean; admin?: boolean };
+const NAV: NavItem[] = [
   { to: "/", label: "Início", exact: true },
   { to: "/vendas", label: "Vendas" },
   { to: "/caixa", label: "Caixa" },
@@ -29,7 +30,7 @@ const NAV = [
   { to: "/clientes", label: "Clientes" },
   { to: "/utilizadores", label: "Utilizadores", admin: true },
   { to: "/relatorios", label: "Relatórios" },
-] as const;
+];
 
 function AppLayout() {
   const { data: user } = useQuery({
