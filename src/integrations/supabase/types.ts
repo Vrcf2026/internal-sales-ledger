@@ -14,7 +14,286 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      caixa_diario: {
+        Row: {
+          aberto_em: string | null
+          data: string
+          estado: string | null
+          fechado_em: string | null
+          id: string
+          saldo_final: number | null
+          saldo_inicial: number
+          utilizador_abertura_id: string
+          utilizador_fecho_id: string | null
+        }
+        Insert: {
+          aberto_em?: string | null
+          data?: string
+          estado?: string | null
+          fechado_em?: string | null
+          id?: string
+          saldo_final?: number | null
+          saldo_inicial?: number
+          utilizador_abertura_id: string
+          utilizador_fecho_id?: string | null
+        }
+        Update: {
+          aberto_em?: string | null
+          data?: string
+          estado?: string | null
+          fechado_em?: string | null
+          id?: string
+          saldo_final?: number | null
+          saldo_inicial?: number
+          utilizador_abertura_id?: string
+          utilizador_fecho_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caixa_diario_utilizador_abertura_id_fkey"
+            columns: ["utilizador_abertura_id"]
+            isOneToOne: false
+            referencedRelation: "utilizadores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "caixa_diario_utilizador_fecho_id_fkey"
+            columns: ["utilizador_fecho_id"]
+            isOneToOne: false
+            referencedRelation: "utilizadores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalogo: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          id: string
+          nome: string
+          preco: number
+          tipo: string
+          unidade: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          id?: string
+          nome: string
+          preco?: number
+          tipo: string
+          unidade?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          id?: string
+          nome?: string
+          preco?: number
+          tipo?: string
+          unidade?: string | null
+        }
+        Relationships: []
+      }
+      clientes: {
+        Row: {
+          id: string
+          nif: string | null
+          nome: string | null
+          telefone: string | null
+        }
+        Insert: {
+          id?: string
+          nif?: string | null
+          nome?: string | null
+          telefone?: string | null
+        }
+        Update: {
+          id?: string
+          nif?: string | null
+          nome?: string | null
+          telefone?: string | null
+        }
+        Relationships: []
+      }
+      registo_itens: {
+        Row: {
+          catalogo_id: string | null
+          descricao: string
+          id: string
+          preco_unitario: number
+          quantidade: number
+          registo_id: string | null
+          subtotal: number | null
+        }
+        Insert: {
+          catalogo_id?: string | null
+          descricao: string
+          id?: string
+          preco_unitario?: number
+          quantidade?: number
+          registo_id?: string | null
+          subtotal?: number | null
+        }
+        Update: {
+          catalogo_id?: string | null
+          descricao?: string
+          id?: string
+          preco_unitario?: number
+          quantidade?: number
+          registo_id?: string | null
+          subtotal?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registo_itens_catalogo_id_fkey"
+            columns: ["catalogo_id"]
+            isOneToOne: false
+            referencedRelation: "catalogo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registo_itens_registo_id_fkey"
+            columns: ["registo_id"]
+            isOneToOne: false
+            referencedRelation: "registos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      registos: {
+        Row: {
+          caixa_diario_id: string
+          cliente_id: string | null
+          created_at: string | null
+          data: string
+          descricao: string | null
+          id: string
+          metodo_pagamento: string
+          numero: number
+          total: number
+          utilizador_id: string
+        }
+        Insert: {
+          caixa_diario_id: string
+          cliente_id?: string | null
+          created_at?: string | null
+          data?: string
+          descricao?: string | null
+          id?: string
+          metodo_pagamento: string
+          numero?: number
+          total?: number
+          utilizador_id: string
+        }
+        Update: {
+          caixa_diario_id?: string
+          cliente_id?: string | null
+          created_at?: string | null
+          data?: string
+          descricao?: string | null
+          id?: string
+          metodo_pagamento?: string
+          numero?: number
+          total?: number
+          utilizador_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registos_caixa_diario_id_fkey"
+            columns: ["caixa_diario_id"]
+            isOneToOne: false
+            referencedRelation: "caixa_diario"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registos_utilizador_id_fkey"
+            columns: ["utilizador_id"]
+            isOneToOne: false
+            referencedRelation: "utilizadores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saidas_caixa: {
+        Row: {
+          caixa_diario_id: string
+          criado_em: string | null
+          descricao: string
+          id: string
+          tipo: string
+          utilizador_id: string
+          valor: number
+        }
+        Insert: {
+          caixa_diario_id: string
+          criado_em?: string | null
+          descricao: string
+          id?: string
+          tipo: string
+          utilizador_id: string
+          valor: number
+        }
+        Update: {
+          caixa_diario_id?: string
+          criado_em?: string | null
+          descricao?: string
+          id?: string
+          tipo?: string
+          utilizador_id?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saidas_caixa_caixa_diario_id_fkey"
+            columns: ["caixa_diario_id"]
+            isOneToOne: false
+            referencedRelation: "caixa_diario"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saidas_caixa_utilizador_id_fkey"
+            columns: ["utilizador_id"]
+            isOneToOne: false
+            referencedRelation: "utilizadores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      utilizadores: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          id: string
+          nome: string
+          papel: string
+          password_hash: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          id?: string
+          nome: string
+          papel?: string
+          password_hash: string
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          id?: string
+          nome?: string
+          papel?: string
+          password_hash?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
