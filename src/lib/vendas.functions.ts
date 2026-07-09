@@ -116,5 +116,5 @@ export const getRegisto = createServerFn({ method: "GET" })
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!reg) throw new Error("Registo não encontrado");
-    return reg;
+    return reg as unknown as Record<string, unknown>;
   });
