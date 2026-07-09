@@ -85,9 +85,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { name: "robots", content: "noindex, nofollow" },
       { property: "og:title", content: "Controlo de Vendas" },
-      { property: "og:description", content: "Aplicação interna de controlo de vendas." },
+      { property: "og:description", content: "Aplicação interna de controlo de vendas: caixa diário, registos e talões de controlo. Documento interno, sem valor fiscal." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Controlo de Vendas" },
+      { name: "twitter:description", content: "Aplicação interna de controlo de vendas: caixa diário, registos e talões de controlo. Documento interno, sem valor fiscal." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/bec04fa9-4e4b-4434-90dd-5ce2df34c560/id-preview-02a1bab0--10f95d5f-9286-41c5-8375-089067cba798.lovable.app-1783606905357.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/bec04fa9-4e4b-4434-90dd-5ce2df34c560/id-preview-02a1bab0--10f95d5f-9286-41c5-8375-089067cba798.lovable.app-1783606905357.png" },
     ],
     links: [
       {
