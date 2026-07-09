@@ -12,7 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppVendasRouteImport } from './routes/_app.vendas'
+import { Route as AppUtilizadoresRouteImport } from './routes/_app.utilizadores'
+import { Route as AppRelatoriosRouteImport } from './routes/_app.relatorios'
+import { Route as AppClientesRouteImport } from './routes/_app.clientes'
+import { Route as AppCatalogoRouteImport } from './routes/_app.catalogo'
 import { Route as AppCaixaRouteImport } from './routes/_app.caixa'
+import { Route as AppVendasNumeroRouteImport } from './routes/_app.vendas.$numero'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -28,35 +34,112 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppVendasRoute = AppVendasRouteImport.update({
+  id: '/vendas',
+  path: '/vendas',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUtilizadoresRoute = AppUtilizadoresRouteImport.update({
+  id: '/utilizadores',
+  path: '/utilizadores',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRelatoriosRoute = AppRelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppClientesRoute = AppClientesRouteImport.update({
+  id: '/clientes',
+  path: '/clientes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCatalogoRoute = AppCatalogoRouteImport.update({
+  id: '/catalogo',
+  path: '/catalogo',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCaixaRoute = AppCaixaRouteImport.update({
   id: '/caixa',
   path: '/caixa',
   getParentRoute: () => AppRoute,
+} as any)
+const AppVendasNumeroRoute = AppVendasNumeroRouteImport.update({
+  id: '/$numero',
+  path: '/$numero',
+  getParentRoute: () => AppVendasRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/auth': typeof AuthRoute
   '/caixa': typeof AppCaixaRoute
+  '/catalogo': typeof AppCatalogoRoute
+  '/clientes': typeof AppClientesRoute
+  '/relatorios': typeof AppRelatoriosRoute
+  '/utilizadores': typeof AppUtilizadoresRoute
+  '/vendas': typeof AppVendasRouteWithChildren
+  '/vendas/$numero': typeof AppVendasNumeroRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/caixa': typeof AppCaixaRoute
+  '/catalogo': typeof AppCatalogoRoute
+  '/clientes': typeof AppClientesRoute
+  '/relatorios': typeof AppRelatoriosRoute
+  '/utilizadores': typeof AppUtilizadoresRoute
+  '/vendas': typeof AppVendasRouteWithChildren
   '/': typeof AppIndexRoute
+  '/vendas/$numero': typeof AppVendasNumeroRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/_app/caixa': typeof AppCaixaRoute
+  '/_app/catalogo': typeof AppCatalogoRoute
+  '/_app/clientes': typeof AppClientesRoute
+  '/_app/relatorios': typeof AppRelatoriosRoute
+  '/_app/utilizadores': typeof AppUtilizadoresRoute
+  '/_app/vendas': typeof AppVendasRouteWithChildren
   '/_app/': typeof AppIndexRoute
+  '/_app/vendas/$numero': typeof AppVendasNumeroRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/caixa'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/caixa'
+    | '/catalogo'
+    | '/clientes'
+    | '/relatorios'
+    | '/utilizadores'
+    | '/vendas'
+    | '/vendas/$numero'
   fileRoutesByTo: FileRoutesByTo
-  to: '/auth' | '/caixa' | '/'
-  id: '__root__' | '/_app' | '/auth' | '/_app/caixa' | '/_app/'
+  to:
+    | '/auth'
+    | '/caixa'
+    | '/catalogo'
+    | '/clientes'
+    | '/relatorios'
+    | '/utilizadores'
+    | '/vendas'
+    | '/'
+    | '/vendas/$numero'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/auth'
+    | '/_app/caixa'
+    | '/_app/catalogo'
+    | '/_app/clientes'
+    | '/_app/relatorios'
+    | '/_app/utilizadores'
+    | '/_app/vendas'
+    | '/_app/'
+    | '/_app/vendas/$numero'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -87,6 +170,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/vendas': {
+      id: '/_app/vendas'
+      path: '/vendas'
+      fullPath: '/vendas'
+      preLoaderRoute: typeof AppVendasRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/utilizadores': {
+      id: '/_app/utilizadores'
+      path: '/utilizadores'
+      fullPath: '/utilizadores'
+      preLoaderRoute: typeof AppUtilizadoresRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/relatorios': {
+      id: '/_app/relatorios'
+      path: '/relatorios'
+      fullPath: '/relatorios'
+      preLoaderRoute: typeof AppRelatoriosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/clientes': {
+      id: '/_app/clientes'
+      path: '/clientes'
+      fullPath: '/clientes'
+      preLoaderRoute: typeof AppClientesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/catalogo': {
+      id: '/_app/catalogo'
+      path: '/catalogo'
+      fullPath: '/catalogo'
+      preLoaderRoute: typeof AppCatalogoRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/caixa': {
       id: '/_app/caixa'
       path: '/caixa'
@@ -94,16 +212,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCaixaRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/vendas/$numero': {
+      id: '/_app/vendas/$numero'
+      path: '/$numero'
+      fullPath: '/vendas/$numero'
+      preLoaderRoute: typeof AppVendasNumeroRouteImport
+      parentRoute: typeof AppVendasRoute
+    }
   }
 }
 
+interface AppVendasRouteChildren {
+  AppVendasNumeroRoute: typeof AppVendasNumeroRoute
+}
+
+const AppVendasRouteChildren: AppVendasRouteChildren = {
+  AppVendasNumeroRoute: AppVendasNumeroRoute,
+}
+
+const AppVendasRouteWithChildren = AppVendasRoute._addFileChildren(
+  AppVendasRouteChildren,
+)
+
 interface AppRouteChildren {
   AppCaixaRoute: typeof AppCaixaRoute
+  AppCatalogoRoute: typeof AppCatalogoRoute
+  AppClientesRoute: typeof AppClientesRoute
+  AppRelatoriosRoute: typeof AppRelatoriosRoute
+  AppUtilizadoresRoute: typeof AppUtilizadoresRoute
+  AppVendasRoute: typeof AppVendasRouteWithChildren
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppCaixaRoute: AppCaixaRoute,
+  AppCatalogoRoute: AppCatalogoRoute,
+  AppClientesRoute: AppClientesRoute,
+  AppRelatoriosRoute: AppRelatoriosRoute,
+  AppUtilizadoresRoute: AppUtilizadoresRoute,
+  AppVendasRoute: AppVendasRouteWithChildren,
   AppIndexRoute: AppIndexRoute,
 }
 

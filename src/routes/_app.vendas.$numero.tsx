@@ -30,7 +30,7 @@ function TalaoPage() {
     );
   }
 
-  const r = q.data as {
+  const r = q.data as unknown as {
     numero: number;
     data: string;
     total: number;
