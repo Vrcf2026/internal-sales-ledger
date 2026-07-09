@@ -30,22 +30,7 @@ function TalaoPage() {
     );
   }
 
-  const r = q.data as unknown as {
-    numero: number;
-    data: string;
-    total: number;
-    metodo_pagamento: string;
-    descricao: string | null;
-    created_at: string;
-    utilizadores: { nome: string } | null;
-    clientes: { nome: string | null; nif: string | null; telefone: string | null } | null;
-    registo_itens: {
-      descricao: string;
-      quantidade: number;
-      preco_unitario: number;
-      subtotal: number;
-    }[];
-  };
+  const r = q.data;
 
   return (
     <div className="space-y-4">
