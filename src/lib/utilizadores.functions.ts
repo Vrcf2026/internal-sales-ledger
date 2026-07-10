@@ -60,12 +60,6 @@ export const confirmarVendedorAcesso = createServerFn({ method: "POST" })
     return vendedor as { id: string; nome: string };
   });
 
-function validaPasswordVendedor(papel: string | undefined, password: string | undefined) {
-  if (papel === "vendedor" && !/^\d{4}$/.test(password ?? "")) {
-    throw new Error("A password do vendedor deve ter exatamente 4 dígitos.");
-  }
-}
-
 export const criarUtilizador = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z
@@ -79,7 +73,9 @@ export const criarUtilizador = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { requireAdmin } = await import("../lib/guard.server");
     await requireAdmin();
-    validaPasswordVendedor(data.papel, data.password);
+    if (data.papel === "vendedor" && !/^\d{4}$/.test(data.password)) {
+      throw new Error("A password do vendedor deve ter exatamente 4 dígitos.");
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Insere sem hash e depois define password via set_password (usa pgcrypto)
     const { data: novo, error } = await supabaseAdmin
@@ -113,12 +109,19 @@ export const atualizarUtilizador = createServerFn({ method: "POST" })
     await requireAdmin();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     if (data.password) {
-      const papelAlvo = data.papel ?? (await supabaseAdmin
-        .from("utilizadores" as never)
-        .select("papel")
-        .eq("id", data.id)
-        .single()).data?.papel;
-      validaPasswordVendedor(String(papelAlvo), data.password);
+      let papelAlvo = data.papel;
+      if (!papelAlvo) {
+        const { data: atual, error } = await supabaseAdmin
+          .from("utilizadores" as never)
+          .select("papel")
+          .eq("id", data.id)
+          .single();
+        if (error) throw new Error(error.message);
+        papelAlvo = (atual as { papel: "admin" | "operador" | "vendedor" }).papel;
+      }
+      if (papelAlvo === "vendedor" && !/^\d{4}$/.test(data.password)) {
+        throw new Error("A password do vendedor deve ter exatamente 4 dígitos.");
+      }
     }
     const upd: Record<string, unknown> = {};
     if (data.papel !== undefined) upd.papel = data.papel;
