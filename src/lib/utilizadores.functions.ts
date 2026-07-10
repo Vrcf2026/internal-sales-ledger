@@ -34,7 +34,7 @@ export const criarUtilizador = createServerFn({ method: "POST" })
       .object({
         nome: z.string().trim().min(1).max(60),
         password: z.string().min(4).max(200),
-        papel: z.enum(["admin", "operador"]),
+        papel: z.enum(["admin", "operador", "vendedor"]),
       })
       .parse(d),
   )
@@ -63,7 +63,7 @@ export const atualizarUtilizador = createServerFn({ method: "POST" })
     z
       .object({
         id: z.string().uuid(),
-        papel: z.enum(["admin", "operador"]).optional(),
+        papel: z.enum(["admin", "operador", "vendedor"]).optional(),
         ativo: z.boolean().optional(),
         password: z.string().min(4).max(200).optional(),
       })
