@@ -29,7 +29,7 @@ const NAV: NavItem[] = [
   { to: "/catalogo", label: "Catálogo", admin: true },
   { to: "/clientes", label: "Clientes" },
   { to: "/utilizadores", label: "Utilizadores", admin: true },
-  { to: "/relatorios", label: "Relatórios" },
+  { to: "/relatorios", label: "Relatórios", admin: true },
 ];
 
 function AppLayout() {
