@@ -419,7 +419,7 @@ function VendasPage() {
           <Button
             className="w-full mt-4"
             size="lg"
-            onClick={guardar}
+            onClick={abrirConfirmacao}
             disabled={saving || total <= 0}
           >
             {saving ? "A guardar…" : "Guardar registo"}
