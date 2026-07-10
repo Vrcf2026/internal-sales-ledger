@@ -107,6 +107,10 @@ function CaixaPage() {
 
   function exigirVendedor() {
     if (vendedorId && vendedorPin) return true;
+    if ((vendedores.data ?? []).length === 0) {
+      toast.error("Não existem vendedores. Crie um em Utilizadores.");
+      return false;
+    }
     setAccessOpen(true);
     return false;
   }
