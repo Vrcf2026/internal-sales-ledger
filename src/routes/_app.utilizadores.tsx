@@ -49,6 +49,7 @@ function UtilizadoresPage() {
 
   const [pwOpen, setPwOpen] = useState(false);
   const [pwId, setPwId] = useState<string | null>(null);
+  const [pwPapel, setPwPapel] = useState<"admin" | "operador" | "vendedor" | null>(null);
   const [pwValue, setPwValue] = useState("");
 
   async function refresh() {
@@ -56,6 +57,10 @@ function UtilizadoresPage() {
   }
 
   async function guardarNovo() {
+    if (papel === "vendedor" && !/^\d{4}$/.test(password)) {
+      toast.error("A password do vendedor deve ter 4 dígitos.");
+      return;
+    }
     try {
       await criar({ data: { nome: nome.trim(), password, papel } });
       toast.success("Utilizador criado");
@@ -89,12 +94,17 @@ function UtilizadoresPage() {
 
   async function alterarPw() {
     if (!pwId) return;
+    if (pwPapel === "vendedor" && !/^\d{4}$/.test(pwValue)) {
+      toast.error("A password do vendedor deve ter 4 dígitos.");
+      return;
+    }
     try {
       await atualizar({ data: { id: pwId, password: pwValue } });
       toast.success("Password alterada");
       setPwOpen(false);
       setPwValue("");
       setPwId(null);
+      setPwPapel(null);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro");
     }
@@ -124,9 +134,20 @@ function UtilizadoresPage() {
                 <Label>Password</Label>
                 <Input
                   type="password"
+                  inputMode={papel === "vendedor" ? "numeric" : undefined}
+                  maxLength={papel === "vendedor" ? 4 : undefined}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) =>
+                    setPassword(
+                      papel === "vendedor"
+                        ? e.target.value.replace(/\D/g, "").slice(0, 4)
+                        : e.target.value,
+                    )
+                  }
                 />
+                {papel === "vendedor" && (
+                  <p className="text-xs text-muted-foreground">Obrigatório: 4 dígitos.</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label>Papel</Label>
@@ -184,7 +205,7 @@ function UtilizadoresPage() {
                     <SelectContent>
                       <SelectItem value="operador">Operador</SelectItem>
                       <SelectItem value="admin">Administrador</SelectItem>
-                    <SelectItem value="vendedor">Vendedor</SelectItem>
+                      <SelectItem value="vendedor">Vendedor</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -195,6 +216,7 @@ function UtilizadoresPage() {
                     variant="outline"
                     onClick={() => {
                       setPwId(u.id);
+                      setPwPapel(u.papel);
                       setPwValue("");
                       setPwOpen(true);
                     }}
@@ -218,7 +240,22 @@ function UtilizadoresPage() {
           </DialogHeader>
           <div className="space-y-1.5">
             <Label>Nova password</Label>
-            <Input type="password" value={pwValue} onChange={(e) => setPwValue(e.target.value)} />
+            <Input
+              type="password"
+              inputMode={pwPapel === "vendedor" ? "numeric" : undefined}
+              maxLength={pwPapel === "vendedor" ? 4 : undefined}
+              value={pwValue}
+              onChange={(e) =>
+                setPwValue(
+                  pwPapel === "vendedor"
+                    ? e.target.value.replace(/\D/g, "").slice(0, 4)
+                    : e.target.value,
+                )
+              }
+            />
+            {pwPapel === "vendedor" && (
+              <p className="text-xs text-muted-foreground">Obrigatório: 4 dígitos.</p>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setPwOpen(false)}>
