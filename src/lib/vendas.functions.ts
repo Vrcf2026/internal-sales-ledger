@@ -31,6 +31,15 @@ export const criarRegisto = createServerFn({ method: "POST" })
     const { requireSession } = await import("../lib/guard.server");
     const s = await requireSession();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Verifica a password do vendedor escolhido
+    const { data: okVend, error: vErr } = await supabaseAdmin.rpc("verify_vendedor", {
+      p_id: data.vendedor_id,
+      p_password: data.vendedor_password,
+    } as never);
+    if (vErr) throw new Error(vErr.message);
+    if (!okVend) throw new Error("Password do vendedor incorreta.");
+
     const hoje = new Date().toISOString().slice(0, 10);
     const { data: caixa } = await supabaseAdmin
       .from("caixa_diario" as never)
