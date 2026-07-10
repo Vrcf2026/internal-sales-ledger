@@ -10,7 +10,7 @@ const itemSchema = z.object({
 
 const criarSchema = z.object({
   vendedor_id: z.string().uuid(),
-  vendedor_password: z.string().min(1).max(200),
+  vendedor_password: z.string().regex(/^\d{4}$/, "A password do vendedor deve ter 4 dígitos."),
   cliente_id: z.string().uuid().nullable().optional(),
   cliente_novo: z
     .object({

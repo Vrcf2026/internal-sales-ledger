@@ -108,6 +108,9 @@ export const atualizarUtilizador = createServerFn({ method: "POST" })
     const { requireAdmin } = await import("../lib/guard.server");
     await requireAdmin();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    if (data.papel === "vendedor" && !data.password) {
+      throw new Error("Defina uma password de 4 dígitos para o vendedor.");
+    }
     if (data.password) {
       let papelAlvo = data.papel;
       if (!papelAlvo) {
