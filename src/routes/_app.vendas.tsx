@@ -2,8 +2,7 @@ import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tan
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
-import { me } from "@/lib/auth.functions";
-import { listVendedores } from "@/lib/utilizadores.functions";
+import { confirmarVendedorAcesso, listVendedores } from "@/lib/utilizadores.functions";
 import { getEstadoCaixa } from "@/lib/caixa.functions";
 import { listCatalogo } from "@/lib/catalogo.functions";
 import { listClientes } from "@/lib/clientes.functions";
@@ -56,7 +55,6 @@ function VendasPage() {
   const emDetalhe = pathname !== "/vendas";
   const qc = useQueryClient();
   const navigate = useNavigate();
-  const meQuery = useQuery({ queryKey: ["me"], queryFn: () => me() });
   const estado = useQuery({ queryKey: ["estado-caixa"], queryFn: () => getEstadoCaixa() });
   const catalogo = useQuery({
     queryKey: ["catalogo", true],
@@ -70,6 +68,7 @@ function VendasPage() {
   });
   const doCriar = useServerFn(criarRegisto);
   const doMarcarFaturado = useServerFn(marcarFaturado);
+  const doConfirmarVendedor = useServerFn(confirmarVendedorAcesso);
 
   async function toggleFaturado(id: string, faturado: boolean) {
     try {
@@ -84,22 +83,35 @@ function VendasPage() {
   const [linhas, setLinhas] = useState<Linha[]>([novaLinha()]);
   const [metodo, setMetodo] = useState<"dinheiro" | "multibanco" | "mbway">("dinheiro");
   const [vendedorId, setVendedorId] = useState<string>("");
+  const [vendedorPin, setVendedorPin] = useState<string>("");
   const [clienteId, setClienteId] = useState<string>("");
   const [clienteNovo, setClienteNovo] = useState({ nome: "", nif: "", telefone: "" });
   const [showNovoCliente, setShowNovoCliente] = useState(false);
   const [descricao, setDescricao] = useState("");
   const [saving, setSaving] = useState(false);
-
-  // Diálogo de confirmação com password do vendedor
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [pwVendedorId, setPwVendedorId] = useState<string>("");
-  const [pwVendedor, setPwVendedor] = useState<string>("");
+  const [accessOpen, setAccessOpen] = useState(false);
+  const [accessVendedorId, setAccessVendedorId] = useState<string>("");
+  const [accessPin, setAccessPin] = useState<string>("");
+  const [accessSaving, setAccessSaving] = useState(false);
 
   useEffect(() => {
-    if (!vendedorId && (vendedores.data ?? []).length === 1) {
-      setVendedorId((vendedores.data![0] as { id: string }).id);
+    if (emDetalhe || vendedorId || vendedores.isLoading) return;
+    const lista = (vendedores.data ?? []) as { id: string; nome: string }[];
+    if (lista.length === 1) {
+      setAccessVendedorId(lista[0].id);
     }
-  }, [vendedores.data, vendedorId]);
+    if (lista.length > 0) {
+      setAccessOpen(true);
+    }
+  }, [emDetalhe, vendedores.data, vendedores.isLoading, vendedorId]);
+
+  const vendedorAtual = useMemo(
+    () =>
+      ((vendedores.data ?? []) as { id: string; nome: string }[]).find(
+        (v) => v.id === vendedorId,
+      ),
+    [vendedores.data, vendedorId],
+  );
 
   const total = useMemo(
     () => linhas.reduce((a, l) => a + l.quantidade * l.preco_unitario, 0),
@@ -121,7 +133,39 @@ function VendasPage() {
     });
   }
 
-  function abrirConfirmacao() {
+  async function confirmarAcessoVendedor() {
+    if (!accessVendedorId) {
+      toast.error("Escolha o vendedor.");
+      return;
+    }
+    if (!/^\d{4}$/.test(accessPin)) {
+      toast.error("A password do vendedor deve ter 4 dígitos.");
+      return;
+    }
+    setAccessSaving(true);
+    try {
+      const vendedor = await doConfirmarVendedor({
+        data: { vendedor_id: accessVendedorId, password: accessPin },
+      });
+      setVendedorId(vendedor.id);
+      setVendedorPin(accessPin);
+      setAccessOpen(false);
+      setAccessPin("");
+      toast.success(`Vendedor: ${vendedor.nome}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro");
+    } finally {
+      setAccessSaving(false);
+    }
+  }
+
+  function trocarVendedor() {
+    setAccessVendedorId(vendedorId);
+    setAccessPin("");
+    setAccessOpen(true);
+  }
+
+  async function guardarRegisto() {
     if (!estado.data?.aberta) {
       toast.error("Abra a caixa antes de registar vendas.");
       return;
@@ -135,27 +179,16 @@ function VendasPage() {
       toast.error("Não existem vendedores. Crie um em Utilizadores.");
       return;
     }
-    setPwVendedorId(vendedorId || "");
-    setPwVendedor("");
-    setConfirmOpen(true);
-  }
-
-  async function confirmarEGuardar() {
-    if (!pwVendedorId) {
-      toast.error("Escolha o vendedor.");
+    if (!vendedorId || !vendedorPin) {
+      setAccessOpen(true);
       return;
     }
-    if (!pwVendedor) {
-      toast.error("Introduza a password do vendedor.");
-      return;
-    }
-    const validas = linhas.filter((l) => l.descricao.trim() && l.quantidade > 0);
     setSaving(true);
     try {
       const res = await doCriar({
         data: {
-          vendedor_id: pwVendedorId,
-          vendedor_password: pwVendedor,
+          vendedor_id: vendedorId,
+          vendedor_password: vendedorPin,
           cliente_id: clienteId || null,
           cliente_novo:
             !clienteId && showNovoCliente
@@ -181,9 +214,6 @@ function VendasPage() {
       setClienteNovo({ nome: "", nif: "", telefone: "" });
       setShowNovoCliente(false);
       setDescricao("");
-      setVendedorId(pwVendedorId);
-      setConfirmOpen(false);
-      setPwVendedor("");
       await Promise.all([
         qc.invalidateQueries({ queryKey: ["registos-hoje"] }),
         qc.invalidateQueries({ queryKey: ["estado-caixa"] }),
@@ -323,23 +353,14 @@ function VendasPage() {
 
       <aside className="space-y-4">
         <div className="rounded-lg border bg-card p-4 space-y-3">
-          <div>
-            <Label>Vendedor</Label>
-            <Select value={vendedorId} onValueChange={setVendedorId}>
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Escolher vendedor" />
-              </SelectTrigger>
-              <SelectContent>
-                {(vendedores.data ?? []).map((v) => {
-                  const row = v as { id: string; nome: string };
-                  return (
-                    <SelectItem key={row.id} value={row.id}>
-                      {row.nome}
-                    </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <Label>Vendedor</Label>
+              <div className="mt-1 font-medium">{vendedorAtual?.nome ?? "Por confirmar"}</div>
+            </div>
+            <Button variant="outline" size="sm" onClick={trocarVendedor}>
+              Trocar
+            </Button>
           </div>
 
           <div>
@@ -419,7 +440,7 @@ function VendasPage() {
           <Button
             className="w-full mt-4"
             size="lg"
-            onClick={abrirConfirmacao}
+            onClick={guardarRegisto}
             disabled={saving || total <= 0}
           >
             {saving ? "A guardar…" : "Guardar registo"}
@@ -487,15 +508,20 @@ function VendasPage() {
         </div>
       </aside>
 
-      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+      <Dialog
+        open={accessOpen}
+        onOpenChange={(open) => {
+          if (open) setAccessOpen(true);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirmar vendedor</DialogTitle>
+            <DialogTitle>Identificar vendedor</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
               <Label>Vendedor</Label>
-              <Select value={pwVendedorId} onValueChange={setPwVendedorId}>
+              <Select value={accessVendedorId} onValueChange={setAccessVendedorId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Escolher vendedor" />
                 </SelectTrigger>
@@ -516,23 +542,19 @@ function VendasPage() {
               <Input
                 type="password"
                 autoFocus
-                value={pwVendedor}
-                onChange={(e) => setPwVendedor(e.target.value)}
+                inputMode="numeric"
+                maxLength={4}
+                value={accessPin}
+                onChange={(e) => setAccessPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && !saving) confirmarEGuardar();
+                  if (e.key === "Enter" && !accessSaving) confirmarAcessoVendedor();
                 }}
               />
             </div>
-            <div className="text-sm text-muted-foreground">
-              Total: <span className="font-medium text-foreground">{formatEUR(total)}</span>
-            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmOpen(false)} disabled={saving}>
-              Cancelar
-            </Button>
-            <Button onClick={confirmarEGuardar} disabled={saving}>
-              {saving ? "A guardar…" : "Confirmar"}
+            <Button onClick={confirmarAcessoVendedor} disabled={accessSaving}>
+              {accessSaving ? "A confirmar…" : "Entrar"}
             </Button>
           </DialogFooter>
         </DialogContent>

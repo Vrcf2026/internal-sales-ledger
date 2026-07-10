@@ -50,12 +50,26 @@ export const getEstadoCaixa = createServerFn({ method: "GET" }).handler(async ()
 
 export const abrirCaixa = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
-    z.object({ saldo_inicial: z.number().min(0).max(999999) }).parse(d),
+    z
+      .object({
+        saldo_inicial: z.number().min(0).max(999999),
+        vendedor_id: z.string().uuid(),
+        vendedor_password: z.string().regex(/^\d{4}$/, "A password do vendedor deve ter 4 dígitos."),
+      })
+      .parse(d),
   )
   .handler(async ({ data }) => {
     const { requireSession } = await import("./guard.server");
     const s = await requireSession();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: okVend, error: vErr } = await supabaseAdmin.rpc("verify_vendedor", {
+      p_id: data.vendedor_id,
+      p_password: data.vendedor_password,
+    } as never);
+    if (vErr) throw new Error(vErr.message);
+    if (!okVend) throw new Error("Vendedor ou password incorretos.");
+
     const hoje = new Date().toISOString().slice(0, 10);
     const { data: existente } = await supabaseAdmin
       .from("caixa_diario" as never)
@@ -79,12 +93,26 @@ export const abrirCaixa = createServerFn({ method: "POST" })
 
 export const fecharCaixa = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
-    z.object({ saldo_final: z.number().min(0).max(9999999) }).parse(d),
+    z
+      .object({
+        saldo_final: z.number().min(0).max(9999999),
+        vendedor_id: z.string().uuid(),
+        vendedor_password: z.string().regex(/^\d{4}$/, "A password do vendedor deve ter 4 dígitos."),
+      })
+      .parse(d),
   )
   .handler(async ({ data }) => {
     const { requireSession } = await import("./guard.server");
     const s = await requireSession();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: okVend, error: vErr } = await supabaseAdmin.rpc("verify_vendedor", {
+      p_id: data.vendedor_id,
+      p_password: data.vendedor_password,
+    } as never);
+    if (vErr) throw new Error(vErr.message);
+    if (!okVend) throw new Error("Vendedor ou password incorretos.");
+
     const hoje = new Date().toISOString().slice(0, 10);
     const { data: caixa } = await supabaseAdmin
       .from("caixa_diario" as never)
@@ -113,6 +141,8 @@ export const registarSaida = createServerFn({ method: "POST" })
         tipo: z.enum(["sangria", "despesa"]),
         descricao: z.string().trim().min(1).max(200),
         valor: z.number().positive().max(999999),
+        vendedor_id: z.string().uuid(),
+        vendedor_password: z.string().regex(/^\d{4}$/, "A password do vendedor deve ter 4 dígitos."),
       })
       .parse(d),
   )
@@ -120,6 +150,14 @@ export const registarSaida = createServerFn({ method: "POST" })
     const { requireSession } = await import("./guard.server");
     const s = await requireSession();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: okVend, error: vErr } = await supabaseAdmin.rpc("verify_vendedor", {
+      p_id: data.vendedor_id,
+      p_password: data.vendedor_password,
+    } as never);
+    if (vErr) throw new Error(vErr.message);
+    if (!okVend) throw new Error("Vendedor ou password incorretos.");
+
     const hoje = new Date().toISOString().slice(0, 10);
     const { data: caixa } = await supabaseAdmin
       .from("caixa_diario" as never)
