@@ -45,7 +45,7 @@ function UtilizadoresPage() {
   const [open, setOpen] = useState(false);
   const [nome, setNome] = useState("");
   const [password, setPassword] = useState("");
-  const [papel, setPapel] = useState<"admin" | "operador">("operador");
+  const [papel, setPapel] = useState<"admin" | "operador" | "vendedor">("operador");
 
   const [pwOpen, setPwOpen] = useState(false);
   const [pwId, setPwId] = useState<string | null>(null);
@@ -69,7 +69,7 @@ function UtilizadoresPage() {
     }
   }
 
-  async function togglePapel(id: string, novoPapel: "admin" | "operador") {
+  async function togglePapel(id: string, novoPapel: "admin" | "operador" | "vendedor") {
     try {
       await atualizar({ data: { id, papel: novoPapel } });
       await refresh();
@@ -130,13 +130,14 @@ function UtilizadoresPage() {
               </div>
               <div className="space-y-1.5">
                 <Label>Papel</Label>
-                <Select value={papel} onValueChange={(v) => setPapel(v as "admin" | "operador")}>
+                <Select value={papel} onValueChange={(v) => setPapel(v as "admin" | "operador" | "vendedor")}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="operador">Operador</SelectItem>
                     <SelectItem value="admin">Administrador</SelectItem>
+                    <SelectItem value="vendedor">Vendedor</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -163,7 +164,7 @@ function UtilizadoresPage() {
             const u = row as {
               id: string;
               nome: string;
-              papel: "admin" | "operador";
+              papel: "admin" | "operador" | "vendedor";
               ativo: boolean;
             };
             return (
@@ -175,7 +176,7 @@ function UtilizadoresPage() {
                 <div>
                   <Select
                     value={u.papel}
-                    onValueChange={(v) => togglePapel(u.id, v as "admin" | "operador")}
+                    onValueChange={(v) => togglePapel(u.id, v as "admin" | "operador" | "vendedor")}
                   >
                     <SelectTrigger className="h-8">
                       <SelectValue />
@@ -183,6 +184,7 @@ function UtilizadoresPage() {
                     <SelectContent>
                       <SelectItem value="operador">Operador</SelectItem>
                       <SelectItem value="admin">Administrador</SelectItem>
+                    <SelectItem value="vendedor">Vendedor</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
