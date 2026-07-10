@@ -50,6 +50,7 @@ function UtilizadoresPage() {
   const [pwOpen, setPwOpen] = useState(false);
   const [pwId, setPwId] = useState<string | null>(null);
   const [pwPapel, setPwPapel] = useState<"admin" | "operador" | "vendedor" | null>(null);
+  const [pwNovoPapel, setPwNovoPapel] = useState<"admin" | "operador" | "vendedor" | null>(null);
   const [pwValue, setPwValue] = useState("");
 
   async function refresh() {
@@ -75,6 +76,14 @@ function UtilizadoresPage() {
   }
 
   async function togglePapel(id: string, novoPapel: "admin" | "operador" | "vendedor") {
+    if (novoPapel === "vendedor") {
+      setPwId(id);
+      setPwPapel("vendedor");
+      setPwNovoPapel("vendedor");
+      setPwValue("");
+      setPwOpen(true);
+      return;
+    }
     try {
       await atualizar({ data: { id, papel: novoPapel } });
       await refresh();
@@ -99,12 +108,14 @@ function UtilizadoresPage() {
       return;
     }
     try {
-      await atualizar({ data: { id: pwId, password: pwValue } });
+      await atualizar({ data: { id: pwId, password: pwValue, papel: pwNovoPapel ?? undefined } });
       toast.success("Password alterada");
       setPwOpen(false);
       setPwValue("");
       setPwId(null);
       setPwPapel(null);
+      setPwNovoPapel(null);
+      await refresh();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro");
     }
@@ -217,6 +228,7 @@ function UtilizadoresPage() {
                     onClick={() => {
                       setPwId(u.id);
                       setPwPapel(u.papel);
+                      setPwNovoPapel(null);
                       setPwValue("");
                       setPwOpen(true);
                     }}
