@@ -28,6 +28,44 @@ export const listUtilizadores = createServerFn({ method: "GET" }).handler(async 
   return data ?? [];
 });
 
+export const confirmarVendedorAcesso = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        vendedor_id: z.string().uuid(),
+        password: z.string().regex(/^\d{4}$/, "A password do vendedor deve ter 4 dígitos."),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { requireSession } = await import("../lib/guard.server");
+    await requireSession();
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: okVend, error: vErr } = await supabaseAdmin.rpc("verify_vendedor", {
+      p_id: data.vendedor_id,
+      p_password: data.password,
+    } as never);
+    if (vErr) throw new Error(vErr.message);
+    if (!okVend) throw new Error("Vendedor ou password incorretos.");
+
+    const { data: vendedor, error } = await supabaseAdmin
+      .from("utilizadores" as never)
+      .select("id, nome")
+      .eq("id", data.vendedor_id)
+      .eq("ativo", true)
+      .eq("papel", "vendedor")
+      .single();
+    if (error) throw new Error(error.message);
+    return vendedor as { id: string; nome: string };
+  });
+
+function validaPasswordVendedor(papel: string | undefined, password: string | undefined) {
+  if (papel === "vendedor" && !/^\d{4}$/.test(password ?? "")) {
+    throw new Error("A password do vendedor deve ter exatamente 4 dígitos.");
+  }
+}
+
 export const criarUtilizador = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z
@@ -41,6 +79,7 @@ export const criarUtilizador = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { requireAdmin } = await import("../lib/guard.server");
     await requireAdmin();
+    validaPasswordVendedor(data.papel, data.password);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Insere sem hash e depois define password via set_password (usa pgcrypto)
     const { data: novo, error } = await supabaseAdmin
@@ -73,6 +112,14 @@ export const atualizarUtilizador = createServerFn({ method: "POST" })
     const { requireAdmin } = await import("../lib/guard.server");
     await requireAdmin();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    if (data.password) {
+      const papelAlvo = data.papel ?? (await supabaseAdmin
+        .from("utilizadores" as never)
+        .select("papel")
+        .eq("id", data.id)
+        .single()).data?.papel;
+      validaPasswordVendedor(String(papelAlvo), data.password);
+    }
     const upd: Record<string, unknown> = {};
     if (data.papel !== undefined) upd.papel = data.papel;
     if (data.ativo !== undefined) upd.ativo = data.ativo;
