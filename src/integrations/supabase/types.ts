@@ -395,6 +395,10 @@ export type Database = {
           papel: string
         }[]
       }
+      verify_vendedor: {
+        Args: { p_id: string; p_password: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
