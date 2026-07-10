@@ -20,6 +20,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_app/vendas")({
@@ -83,9 +90,16 @@ function VendasPage() {
   const [descricao, setDescricao] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Diálogo de confirmação com password do vendedor
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pwVendedorId, setPwVendedorId] = useState<string>("");
+  const [pwVendedor, setPwVendedor] = useState<string>("");
+
   useEffect(() => {
-    if (meQuery.data && !vendedorId) setVendedorId(meQuery.data.id);
-  }, [meQuery.data, vendedorId]);
+    if (!vendedorId && (vendedores.data ?? []).length === 1) {
+      setVendedorId((vendedores.data![0] as { id: string }).id);
+    }
+  }, [vendedores.data, vendedorId]);
 
   const total = useMemo(
     () => linhas.reduce((a, l) => a + l.quantidade * l.preco_unitario, 0),
@@ -107,7 +121,7 @@ function VendasPage() {
     });
   }
 
-  async function guardar() {
+  function abrirConfirmacao() {
     if (!estado.data?.aberta) {
       toast.error("Abra a caixa antes de registar vendas.");
       return;
@@ -117,15 +131,31 @@ function VendasPage() {
       toast.error("Adicione pelo menos uma linha.");
       return;
     }
-    if (!vendedorId) {
+    if ((vendedores.data ?? []).length === 0) {
+      toast.error("Não existem vendedores. Crie um em Utilizadores.");
+      return;
+    }
+    setPwVendedorId(vendedorId || "");
+    setPwVendedor("");
+    setConfirmOpen(true);
+  }
+
+  async function confirmarEGuardar() {
+    if (!pwVendedorId) {
       toast.error("Escolha o vendedor.");
       return;
     }
+    if (!pwVendedor) {
+      toast.error("Introduza a password do vendedor.");
+      return;
+    }
+    const validas = linhas.filter((l) => l.descricao.trim() && l.quantidade > 0);
     setSaving(true);
     try {
       const res = await doCriar({
         data: {
-          vendedor_id: vendedorId,
+          vendedor_id: pwVendedorId,
+          vendedor_password: pwVendedor,
           cliente_id: clienteId || null,
           cliente_novo:
             !clienteId && showNovoCliente
@@ -151,6 +181,9 @@ function VendasPage() {
       setClienteNovo({ nome: "", nif: "", telefone: "" });
       setShowNovoCliente(false);
       setDescricao("");
+      setVendedorId(pwVendedorId);
+      setConfirmOpen(false);
+      setPwVendedor("");
       await Promise.all([
         qc.invalidateQueries({ queryKey: ["registos-hoje"] }),
         qc.invalidateQueries({ queryKey: ["estado-caixa"] }),
@@ -163,6 +196,7 @@ function VendasPage() {
       setSaving(false);
     }
   }
+
 
   if (emDetalhe) {
     return <Outlet />;
@@ -385,7 +419,7 @@ function VendasPage() {
           <Button
             className="w-full mt-4"
             size="lg"
-            onClick={guardar}
+            onClick={abrirConfirmacao}
             disabled={saving || total <= 0}
           >
             {saving ? "A guardar…" : "Guardar registo"}
@@ -452,6 +486,57 @@ function VendasPage() {
           </div>
         </div>
       </aside>
+
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar vendedor</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label>Vendedor</Label>
+              <Select value={pwVendedorId} onValueChange={setPwVendedorId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Escolher vendedor" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(vendedores.data ?? []).map((v) => {
+                    const row = v as { id: string; nome: string };
+                    return (
+                      <SelectItem key={row.id} value={row.id}>
+                        {row.nome}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Password do vendedor</Label>
+              <Input
+                type="password"
+                autoFocus
+                value={pwVendedor}
+                onChange={(e) => setPwVendedor(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !saving) confirmarEGuardar();
+                }}
+              />
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Total: <span className="font-medium text-foreground">{formatEUR(total)}</span>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmOpen(false)} disabled={saving}>
+              Cancelar
+            </Button>
+            <Button onClick={confirmarEGuardar} disabled={saving}>
+              {saving ? "A guardar…" : "Confirmar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -13,8 +13,8 @@ export const relatorioIntervalo = createServerFn({ method: "GET" })
       .parse(d),
   )
   .handler(async ({ data }) => {
-    const { requireSession } = await import("../lib/guard.server");
-    await requireSession();
+    const { requireAdmin } = await import("../lib/guard.server");
+    await requireAdmin();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: registos } = await supabaseAdmin

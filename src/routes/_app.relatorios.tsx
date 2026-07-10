@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { me } from "@/lib/auth.functions";
 import { relatorioIntervalo } from "@/lib/relatorios.functions";
 import { formatEUR } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/_app/relatorios")({
+  beforeLoad: async () => {
+    const user = await me();
+    if (!user || user.papel !== "admin") throw redirect({ to: "/" });
+  },
   component: RelatoriosPage,
 });
 

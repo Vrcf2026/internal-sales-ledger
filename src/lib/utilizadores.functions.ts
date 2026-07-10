@@ -1,8 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-// Lista leve de utilizadores ativos, para escolher o vendedor numa venda.
-// Acessível a qualquer sessão válida (não só admin) — não expõe password_hash.
+// Lista de vendedores ativos (papel='vendedor') para escolher e autenticar em cada venda.
 export const listVendedores = createServerFn({ method: "GET" }).handler(async () => {
   const { requireSession } = await import("../lib/guard.server");
   await requireSession();
@@ -11,6 +10,7 @@ export const listVendedores = createServerFn({ method: "GET" }).handler(async ()
     .from("utilizadores" as never)
     .select("id, nome")
     .eq("ativo", true)
+    .eq("papel", "vendedor")
     .order("nome", { ascending: true });
   if (error) throw new Error(error.message);
   return data ?? [];
@@ -34,7 +34,7 @@ export const criarUtilizador = createServerFn({ method: "POST" })
       .object({
         nome: z.string().trim().min(1).max(60),
         password: z.string().min(4).max(200),
-        papel: z.enum(["admin", "operador"]),
+        papel: z.enum(["admin", "operador", "vendedor"]),
       })
       .parse(d),
   )
@@ -63,7 +63,7 @@ export const atualizarUtilizador = createServerFn({ method: "POST" })
     z
       .object({
         id: z.string().uuid(),
-        papel: z.enum(["admin", "operador"]).optional(),
+        papel: z.enum(["admin", "operador", "vendedor"]).optional(),
         ativo: z.boolean().optional(),
         password: z.string().min(4).max(200).optional(),
       })
