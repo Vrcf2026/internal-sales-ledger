@@ -486,6 +486,57 @@ function VendasPage() {
           </div>
         </div>
       </aside>
+
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar vendedor</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label>Vendedor</Label>
+              <Select value={pwVendedorId} onValueChange={setPwVendedorId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Escolher vendedor" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(vendedores.data ?? []).map((v) => {
+                    const row = v as { id: string; nome: string };
+                    return (
+                      <SelectItem key={row.id} value={row.id}>
+                        {row.nome}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Password do vendedor</Label>
+              <Input
+                type="password"
+                autoFocus
+                value={pwVendedor}
+                onChange={(e) => setPwVendedor(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !saving) confirmarEGuardar();
+                }}
+              />
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Total: <span className="font-medium text-foreground">{formatEUR(total)}</span>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmOpen(false)} disabled={saving}>
+              Cancelar
+            </Button>
+            <Button onClick={confirmarEGuardar} disabled={saving}>
+              {saving ? "A guardar…" : "Confirmar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
