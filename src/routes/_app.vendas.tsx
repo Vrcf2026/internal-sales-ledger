@@ -430,6 +430,7 @@ function VendasPage() {
               <SelectItem value="dinheiro">Dinheiro</SelectItem>
               <SelectItem value="multibanco">Multibanco</SelectItem>
               <SelectItem value="mbway">MB Way</SelectItem>
+              <SelectItem value="credito">A crédito (conta corrente)</SelectItem>
             </SelectContent>
           </Select>
         </div>
