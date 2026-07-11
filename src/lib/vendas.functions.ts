@@ -20,10 +20,11 @@ const criarSchema = z.object({
     })
     .optional()
     .nullable(),
-  metodo_pagamento: z.enum(["dinheiro", "multibanco", "mbway"]),
+  metodo_pagamento: z.enum(["dinheiro", "multibanco", "mbway", "credito"]),
   descricao: z.string().trim().max(200).optional().nullable(),
   itens: z.array(itemSchema).min(1).max(200),
 });
+
 
 export const criarRegisto = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => criarSchema.parse(d))
