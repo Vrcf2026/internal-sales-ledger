@@ -240,7 +240,7 @@ export const reativarRegisto = createServerFn({ method: "POST" })
 const editarSchema = z.object({
   id: z.string().uuid(),
   cliente_id: z.string().uuid().nullable().optional(),
-  metodo_pagamento: z.enum(["dinheiro", "multibanco", "mbway"]),
+  metodo_pagamento: z.enum(["dinheiro", "multibanco", "mbway", "credito"]),
   descricao: z.string().trim().max(200).optional().nullable(),
   vendedor_id: z.string().uuid(),
   itens: z.array(itemSchema).min(1).max(200),
