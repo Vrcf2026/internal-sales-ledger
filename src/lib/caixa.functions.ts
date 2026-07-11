@@ -26,17 +26,34 @@ export const getEstadoCaixa = createServerFn({ method: "GET" }).handler(async ()
     .from("saidas_caixa" as never)
     .select("valor, tipo")
     .eq("caixa_diario_id", c.id);
+  const { data: pagamentos } = await supabaseAdmin
+    .from("pagamentos" as never)
+    .select("valor, metodo_pagamento")
+    .eq("caixa_diario_id", c.id);
 
   const totais = {
     dinheiro: 0,
     multibanco: 0,
     mbway: 0,
+    credito: 0,
+    liquidacoes: 0,
     numRegistos: (registos ?? []).length,
     sangrias: 0,
     despesas: 0,
   };
-  for (const r of (registos ?? []) as { total: number; metodo_pagamento: keyof typeof totais }[]) {
-    totais[r.metodo_pagamento] += Number(r.total);
+  for (const r of (registos ?? []) as {
+    total: number;
+    metodo_pagamento: "dinheiro" | "multibanco" | "mbway" | "credito";
+  }[]) {
+    if (r.metodo_pagamento === "credito") totais.credito += Number(r.total);
+    else totais[r.metodo_pagamento] += Number(r.total);
+  }
+  for (const p of (pagamentos ?? []) as {
+    valor: number;
+    metodo_pagamento: "dinheiro" | "multibanco" | "mbway";
+  }[]) {
+    totais[p.metodo_pagamento] += Number(p.valor);
+    totais.liquidacoes += Number(p.valor);
   }
   for (const s of (saidas ?? []) as { valor: number; tipo: "sangria" | "despesa" }[]) {
     if (s.tipo === "sangria") totais.sangrias += Number(s.valor);

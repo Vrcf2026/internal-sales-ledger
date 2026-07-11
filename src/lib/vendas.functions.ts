@@ -20,10 +20,11 @@ const criarSchema = z.object({
     })
     .optional()
     .nullable(),
-  metodo_pagamento: z.enum(["dinheiro", "multibanco", "mbway"]),
+  metodo_pagamento: z.enum(["dinheiro", "multibanco", "mbway", "credito"]),
   descricao: z.string().trim().max(200).optional().nullable(),
   itens: z.array(itemSchema).min(1).max(200),
 });
+
 
 export const criarRegisto = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => criarSchema.parse(d))
@@ -39,6 +40,15 @@ export const criarRegisto = createServerFn({ method: "POST" })
     } as never);
     if (vErr) throw new Error(vErr.message);
     if (!okVend) throw new Error("Password do vendedor incorreta.");
+
+    if (data.metodo_pagamento === "credito") {
+      const temClienteExistente = !!data.cliente_id;
+      const cn = data.cliente_novo;
+      const temClienteNovo = !!(cn && (cn.nome || cn.nif || cn.telefone));
+      if (!temClienteExistente && !temClienteNovo)
+        throw new Error("Vendas a crédito exigem cliente identificado.");
+    }
+
 
     const hoje = new Date().toISOString().slice(0, 10);
     const { data: caixa } = await supabaseAdmin
@@ -128,7 +138,7 @@ export type RegistoDetalhe = {
   numero: number;
   data: string;
   total: number;
-  metodo_pagamento: "dinheiro" | "multibanco" | "mbway";
+  metodo_pagamento: "dinheiro" | "multibanco" | "mbway" | "credito";
   descricao: string | null;
   created_at: string;
   faturado: boolean;
@@ -172,8 +182,8 @@ export const marcarFaturado = createServerFn({ method: "POST" })
     z.object({ id: z.string().uuid(), faturado: z.boolean() }).parse(d),
   )
   .handler(async ({ data }) => {
-    const { requireAdmin } = await import("../lib/guard.server");
-    const s = await requireAdmin();
+    const { requireSession } = await import("../lib/guard.server");
+    const s = await requireSession();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("registos" as never)
@@ -230,7 +240,7 @@ export const reativarRegisto = createServerFn({ method: "POST" })
 const editarSchema = z.object({
   id: z.string().uuid(),
   cliente_id: z.string().uuid().nullable().optional(),
-  metodo_pagamento: z.enum(["dinheiro", "multibanco", "mbway"]),
+  metodo_pagamento: z.enum(["dinheiro", "multibanco", "mbway", "credito"]),
   descricao: z.string().trim().max(200).optional().nullable(),
   vendedor_id: z.string().uuid(),
   itens: z.array(itemSchema).min(1).max(200),

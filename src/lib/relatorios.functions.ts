@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-type MetodoPag = "dinheiro" | "multibanco" | "mbway";
+type MetodoPag = "dinheiro" | "multibanco" | "mbway" | "credito";
 
 export const relatorioIntervalo = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) =>
@@ -37,7 +37,14 @@ export const relatorioIntervalo = createServerFn({ method: "GET" })
           .in("caixa_diario_id", caixaIds)
       : { data: [] };
 
-    const totais = { dinheiro: 0, multibanco: 0, mbway: 0, numRegistos: 0, total: 0 };
+    const totais = {
+      dinheiro: 0,
+      multibanco: 0,
+      mbway: 0,
+      credito: 0,
+      numRegistos: 0,
+      total: 0,
+    };
     for (const r of (registos ?? []) as { total: number; metodo_pagamento: MetodoPag }[]) {
       totais[r.metodo_pagamento] += Number(r.total);
       totais.total += Number(r.total);

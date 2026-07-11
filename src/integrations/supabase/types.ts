@@ -134,6 +134,81 @@ export type Database = {
         }
         Relationships: []
       }
+      pagamentos: {
+        Row: {
+          caixa_diario_id: string
+          cliente_id: string | null
+          created_at: string
+          descricao: string | null
+          id: string
+          metodo_pagamento: string
+          registo_id: string
+          utilizador_id: string
+          valor: number
+          vendedor_id: string | null
+        }
+        Insert: {
+          caixa_diario_id: string
+          cliente_id?: string | null
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          metodo_pagamento: string
+          registo_id: string
+          utilizador_id: string
+          valor: number
+          vendedor_id?: string | null
+        }
+        Update: {
+          caixa_diario_id?: string
+          cliente_id?: string | null
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          metodo_pagamento?: string
+          registo_id?: string
+          utilizador_id?: string
+          valor?: number
+          vendedor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pagamentos_caixa_diario_id_fkey"
+            columns: ["caixa_diario_id"]
+            isOneToOne: false
+            referencedRelation: "caixa_diario"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pagamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pagamentos_registo_id_fkey"
+            columns: ["registo_id"]
+            isOneToOne: false
+            referencedRelation: "registos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pagamentos_utilizador_id_fkey"
+            columns: ["utilizador_id"]
+            isOneToOne: false
+            referencedRelation: "utilizadores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pagamentos_vendedor_id_fkey"
+            columns: ["vendedor_id"]
+            isOneToOne: false
+            referencedRelation: "utilizadores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       registo_itens: {
         Row: {
           catalogo_id: string | null

@@ -81,7 +81,9 @@ function VendasPage() {
   }
 
   const [linhas, setLinhas] = useState<Linha[]>([novaLinha()]);
-  const [metodo, setMetodo] = useState<"dinheiro" | "multibanco" | "mbway">("dinheiro");
+  const [metodo, setMetodo] = useState<"dinheiro" | "multibanco" | "mbway" | "credito">(
+    "dinheiro",
+  );
   const [vendedorId, setVendedorId] = useState<string>("");
   const [vendedorPin, setVendedorPin] = useState<string>("");
   const [clienteId, setClienteId] = useState<string>("");
@@ -178,6 +180,15 @@ function VendasPage() {
     if ((vendedores.data ?? []).length === 0) {
       toast.error("Não existem vendedores. Crie um em Utilizadores.");
       return;
+    }
+    if (metodo === "credito") {
+      const temNovo =
+        showNovoCliente &&
+        (clienteNovo.nome.trim() || clienteNovo.nif.trim() || clienteNovo.telefone.trim());
+      if (!clienteId && !temNovo) {
+        toast.error("Vendas a crédito exigem cliente identificado.");
+        return;
+      }
     }
     if (!vendedorId || !vendedorPin) {
       setAccessOpen(true);
@@ -428,6 +439,7 @@ function VendasPage() {
               <SelectItem value="dinheiro">Dinheiro</SelectItem>
               <SelectItem value="multibanco">Multibanco</SelectItem>
               <SelectItem value="mbway">MB Way</SelectItem>
+              <SelectItem value="credito">A crédito (conta corrente)</SelectItem>
             </SelectContent>
           </Select>
         </div>
