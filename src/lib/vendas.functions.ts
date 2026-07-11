@@ -41,6 +41,15 @@ export const criarRegisto = createServerFn({ method: "POST" })
     if (vErr) throw new Error(vErr.message);
     if (!okVend) throw new Error("Password do vendedor incorreta.");
 
+    if (data.metodo_pagamento === "credito") {
+      const temClienteExistente = !!data.cliente_id;
+      const cn = data.cliente_novo;
+      const temClienteNovo = !!(cn && (cn.nome || cn.nif || cn.telefone));
+      if (!temClienteExistente && !temClienteNovo)
+        throw new Error("Vendas a crédito exigem cliente identificado.");
+    }
+
+
     const hoje = new Date().toISOString().slice(0, 10);
     const { data: caixa } = await supabaseAdmin
       .from("caixa_diario" as never)
