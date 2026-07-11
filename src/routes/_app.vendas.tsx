@@ -81,7 +81,9 @@ function VendasPage() {
   }
 
   const [linhas, setLinhas] = useState<Linha[]>([novaLinha()]);
-  const [metodo, setMetodo] = useState<"dinheiro" | "multibanco" | "mbway">("dinheiro");
+  const [metodo, setMetodo] = useState<"dinheiro" | "multibanco" | "mbway" | "credito">(
+    "dinheiro",
+  );
   const [vendedorId, setVendedorId] = useState<string>("");
   const [vendedorPin, setVendedorPin] = useState<string>("");
   const [clienteId, setClienteId] = useState<string>("");
