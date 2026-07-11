@@ -15,6 +15,8 @@ export function metodoLabel(m: string): string {
       return "Multibanco";
     case "mbway":
       return "MB Way";
+    case "credito":
+      return "A crédito";
     default:
       return m;
   }
