@@ -17,7 +17,6 @@ export const Route = createFileRoute("/_app")({
     if (!user) throw redirect({ to: "/auth" });
     return { user };
   },
-  loader: ({ context }) => context,
   component: AppLayout,
 });
 
