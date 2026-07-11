@@ -181,6 +181,14 @@ function VendasPage() {
       toast.error("Não existem vendedores. Crie um em Utilizadores.");
       return;
     }
+    if (metodo === "credito") {
+      const temNovo =
+        showNovoCliente &&
+        (clienteNovo.nome.trim() || clienteNovo.nif.trim() || clienteNovo.telefone.trim());
+      if (!clienteId && !temNovo) {
+        toast.error("Vendas a crédito exigem cliente identificado.");
+        return;
+      }
     if (!vendedorId || !vendedorPin) {
       setAccessOpen(true);
       return;
