@@ -250,6 +250,11 @@ function CaixaPage() {
                 Vendas em dinheiro
               </div>
               <div className="mt-1 text-xl font-semibold">{formatEUR(t?.dinheiro ?? 0)}</div>
+              {(t?.liquidacoes ?? 0) > 0 && (
+                <div className="text-[11px] text-muted-foreground mt-1">
+                  inclui {formatEUR(t?.liquidacoes ?? 0)} de liquidações
+                </div>
+              )}
             </div>
             <div className="rounded-lg border bg-card p-4">
               <div className="text-xs uppercase tracking-wider text-muted-foreground">Saídas</div>
@@ -264,6 +269,13 @@ function CaixaPage() {
               <div className="mt-1 text-xl font-semibold">{formatEUR(t?.saldoEsperado ?? 0)}</div>
             </div>
           </div>
+
+          {(t?.credito ?? 0) > 0 && (
+            <div className="rounded-lg border bg-amber-50 border-amber-200 p-4 text-sm text-amber-900 dark:bg-amber-950/40 dark:border-amber-900 dark:text-amber-100">
+              Vendas a crédito hoje: <strong>{formatEUR(t?.credito ?? 0)}</strong> — não entram na
+              caixa até serem liquidadas.
+            </div>
+          )}
 
           <div className="grid gap-6 md:grid-cols-2">
             <div className="rounded-lg border bg-card p-5">
