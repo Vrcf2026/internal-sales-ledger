@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-type MetodoPag = "dinheiro" | "multibanco" | "mbway";
+type MetodoPag = "dinheiro" | "multibanco" | "mbway" | "credito";
 
 export const relatorioIntervalo = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) =>
