@@ -189,6 +189,7 @@ function VendasPage() {
         toast.error("Vendas a crédito exigem cliente identificado.");
         return;
       }
+    }
     if (!vendedorId || !vendedorPin) {
       setAccessOpen(true);
       return;
