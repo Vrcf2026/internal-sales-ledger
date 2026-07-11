@@ -138,7 +138,7 @@ export type RegistoDetalhe = {
   numero: number;
   data: string;
   total: number;
-  metodo_pagamento: "dinheiro" | "multibanco" | "mbway";
+  metodo_pagamento: "dinheiro" | "multibanco" | "mbway" | "credito";
   descricao: string | null;
   created_at: string;
   faturado: boolean;
