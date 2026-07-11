@@ -182,8 +182,8 @@ export const marcarFaturado = createServerFn({ method: "POST" })
     z.object({ id: z.string().uuid(), faturado: z.boolean() }).parse(d),
   )
   .handler(async ({ data }) => {
-    const { requireAdmin } = await import("../lib/guard.server");
-    const s = await requireAdmin();
+    const { requireSession } = await import("../lib/guard.server");
+    const s = await requireSession();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("registos" as never)
