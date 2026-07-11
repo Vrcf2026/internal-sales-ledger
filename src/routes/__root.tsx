@@ -112,6 +112,12 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "window.addEventListener('pageshow',function(e){var nav=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(e.persisted||(nav&&nav.type==='back_forward')){window.location.reload();}});",
+          }}
+        />
       </head>
       <body>
         {children}
