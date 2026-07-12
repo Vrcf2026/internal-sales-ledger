@@ -133,6 +133,37 @@ export const listRegistosHoje = createServerFn({ method: "GET" }).handler(async 
   return data ?? [];
 });
 
+export const listRegistos = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        de: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+        ate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+        numero: z.number().int().positive().optional().nullable(),
+        limite: z.number().int().min(1).max(500).optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { requireSession } = await import("../lib/guard.server");
+    await requireSession();
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    let q = supabaseAdmin
+      .from("registos" as never)
+      .select(
+        "id, numero, data, total, metodo_pagamento, created_at, faturado, anulado, " +
+          "operador:utilizadores!utilizador_id(nome), vendedor:utilizadores!vendedor_id(nome), clientes(nome)",
+      )
+      .order("numero", { ascending: false })
+      .limit(data.limite ?? 200);
+    if (data.numero) q = q.eq("numero", data.numero);
+    if (data.de) q = q.gte("data", data.de);
+    if (data.ate) q = q.lte("data", data.ate);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
 export type RegistoDetalhe = {
   id: string;
   numero: number;
