@@ -25,6 +25,7 @@ const NAV: NavItem[] = [
   { to: "/", label: "Início", exact: true },
   { to: "/vendas", label: "Vendas" },
   { to: "/caixa", label: "Caixa" },
+  { to: "/historico", label: "Histórico" },
   { to: "/catalogo", label: "Catálogo", admin: true },
   { to: "/clientes", label: "Clientes" },
   { to: "/conta-corrente", label: "Conta corrente" },
