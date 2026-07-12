@@ -21,6 +21,11 @@ export type Database = {
           estado: string | null
           fechado_em: string | null
           id: string
+          num_fechos: number
+          reaberta: boolean
+          reaberta_em: string | null
+          reaberta_motivo: string | null
+          reaberta_por: string | null
           saldo_final: number | null
           saldo_inicial: number
           utilizador_abertura_id: string
@@ -32,6 +37,11 @@ export type Database = {
           estado?: string | null
           fechado_em?: string | null
           id?: string
+          num_fechos?: number
+          reaberta?: boolean
+          reaberta_em?: string | null
+          reaberta_motivo?: string | null
+          reaberta_por?: string | null
           saldo_final?: number | null
           saldo_inicial?: number
           utilizador_abertura_id: string
@@ -43,12 +53,24 @@ export type Database = {
           estado?: string | null
           fechado_em?: string | null
           id?: string
+          num_fechos?: number
+          reaberta?: boolean
+          reaberta_em?: string | null
+          reaberta_motivo?: string | null
+          reaberta_por?: string | null
           saldo_final?: number | null
           saldo_inicial?: number
           utilizador_abertura_id?: string
           utilizador_fecho_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "caixa_diario_reaberta_por_fkey"
+            columns: ["reaberta_por"]
+            isOneToOne: false
+            referencedRelation: "utilizadores"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "caixa_diario_utilizador_abertura_id_fkey"
             columns: ["utilizador_abertura_id"]

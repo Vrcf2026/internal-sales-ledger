@@ -15,6 +15,7 @@ import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppVendasRouteImport } from './routes/_app.vendas'
 import { Route as AppUtilizadoresRouteImport } from './routes/_app.utilizadores'
 import { Route as AppRelatoriosRouteImport } from './routes/_app.relatorios'
+import { Route as AppHistoricoRouteImport } from './routes/_app.historico'
 import { Route as AppContaCorrenteRouteImport } from './routes/_app.conta-corrente'
 import { Route as AppClientesRouteImport } from './routes/_app.clientes'
 import { Route as AppCatalogoRouteImport } from './routes/_app.catalogo'
@@ -50,6 +51,11 @@ const AppRelatoriosRoute = AppRelatoriosRouteImport.update({
   path: '/relatorios',
   getParentRoute: () => AppRoute,
 } as any)
+const AppHistoricoRoute = AppHistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppContaCorrenteRoute = AppContaCorrenteRouteImport.update({
   id: '/conta-corrente',
   path: '/conta-corrente',
@@ -83,6 +89,7 @@ export interface FileRoutesByFullPath {
   '/catalogo': typeof AppCatalogoRoute
   '/clientes': typeof AppClientesRoute
   '/conta-corrente': typeof AppContaCorrenteRoute
+  '/historico': typeof AppHistoricoRoute
   '/relatorios': typeof AppRelatoriosRoute
   '/utilizadores': typeof AppUtilizadoresRoute
   '/vendas': typeof AppVendasRouteWithChildren
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/catalogo': typeof AppCatalogoRoute
   '/clientes': typeof AppClientesRoute
   '/conta-corrente': typeof AppContaCorrenteRoute
+  '/historico': typeof AppHistoricoRoute
   '/relatorios': typeof AppRelatoriosRoute
   '/utilizadores': typeof AppUtilizadoresRoute
   '/vendas': typeof AppVendasRouteWithChildren
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   '/_app/catalogo': typeof AppCatalogoRoute
   '/_app/clientes': typeof AppClientesRoute
   '/_app/conta-corrente': typeof AppContaCorrenteRoute
+  '/_app/historico': typeof AppHistoricoRoute
   '/_app/relatorios': typeof AppRelatoriosRoute
   '/_app/utilizadores': typeof AppUtilizadoresRoute
   '/_app/vendas': typeof AppVendasRouteWithChildren
@@ -123,6 +132,7 @@ export interface FileRouteTypes {
     | '/catalogo'
     | '/clientes'
     | '/conta-corrente'
+    | '/historico'
     | '/relatorios'
     | '/utilizadores'
     | '/vendas'
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
     | '/catalogo'
     | '/clientes'
     | '/conta-corrente'
+    | '/historico'
     | '/relatorios'
     | '/utilizadores'
     | '/vendas'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
     | '/_app/catalogo'
     | '/_app/clientes'
     | '/_app/conta-corrente'
+    | '/_app/historico'
     | '/_app/relatorios'
     | '/_app/utilizadores'
     | '/_app/vendas'
@@ -201,6 +213,13 @@ declare module '@tanstack/react-router' {
       path: '/relatorios'
       fullPath: '/relatorios'
       preLoaderRoute: typeof AppRelatoriosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/historico': {
+      id: '/_app/historico'
+      path: '/historico'
+      fullPath: '/historico'
+      preLoaderRoute: typeof AppHistoricoRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/conta-corrente': {
@@ -258,6 +277,7 @@ interface AppRouteChildren {
   AppCatalogoRoute: typeof AppCatalogoRoute
   AppClientesRoute: typeof AppClientesRoute
   AppContaCorrenteRoute: typeof AppContaCorrenteRoute
+  AppHistoricoRoute: typeof AppHistoricoRoute
   AppRelatoriosRoute: typeof AppRelatoriosRoute
   AppUtilizadoresRoute: typeof AppUtilizadoresRoute
   AppVendasRoute: typeof AppVendasRouteWithChildren
@@ -269,6 +289,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCatalogoRoute: AppCatalogoRoute,
   AppClientesRoute: AppClientesRoute,
   AppContaCorrenteRoute: AppContaCorrenteRoute,
+  AppHistoricoRoute: AppHistoricoRoute,
   AppRelatoriosRoute: AppRelatoriosRoute,
   AppUtilizadoresRoute: AppUtilizadoresRoute,
   AppVendasRoute: AppVendasRouteWithChildren,
