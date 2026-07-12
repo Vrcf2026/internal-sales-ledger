@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { me } from "@/lib/auth.functions";
+import { diasAtrasPT, hojePT } from "@/lib/date-pt";
 import { listRegistos } from "@/lib/vendas.functions";
 import { listCaixas, getCaixaDetalhe, reabrirCaixa } from "@/lib/caixa.functions";
 import { formatEUR, metodoLabel } from "@/lib/format";
@@ -17,19 +18,18 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Printer } from "lucide-react";
+import { Download, Printer } from "lucide-react";
+import { exportCSV } from "@/lib/csv-export";
 
 export const Route = createFileRoute("/_app/historico")({
   component: HistoricoPage,
 });
 
 function hoje() {
-  return new Date().toISOString().slice(0, 10);
+  return hojePT();
 }
 function menos(dias: number) {
-  const d = new Date();
-  d.setDate(d.getDate() - dias);
-  return d.toISOString().slice(0, 10);
+  return diasAtrasPT(dias);
 }
 
 function HistoricoPage() {
@@ -83,9 +83,40 @@ function RegistosTab() {
     queryFn: () => listRegistos({ data: filtro }),
   });
 
+  function exportar() {
+    const linhas = (q.data ?? []).map((r) => {
+      const row = r as {
+        numero: number;
+        data: string;
+        total: number;
+        metodo_pagamento: string;
+        faturado: boolean;
+        anulado: boolean;
+        clientes: { nome: string | null } | null;
+        vendedor: { nome: string } | null;
+        operador: { nome: string } | null;
+      };
+      return [
+        row.numero,
+        row.data,
+        row.clientes?.nome ?? "",
+        row.vendedor?.nome ?? "",
+        row.operador?.nome ?? "",
+        metodoLabel(row.metodo_pagamento),
+        row.total.toFixed(2).replace(".", ","),
+        row.anulado ? "Anulado" : row.faturado ? "Faturado" : "Por faturar",
+      ];
+    });
+    exportCSV(
+      `vendas_${de}_a_${ate}.csv`,
+      ["Nº", "Data", "Cliente", "Vendedor", "Operador", "Método", "Total (€)", "Estado"],
+      linhas,
+    );
+  }
+
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-[1fr_1fr_1fr_auto] items-end">
+      <div className="grid gap-3 sm:grid-cols-[1fr_1fr_1fr_auto_auto] items-end">
         <div>
           <Label>De</Label>
           <Input type="date" value={de} onChange={(e) => setDe(e.target.value)} />
@@ -105,6 +136,9 @@ function RegistosTab() {
         </div>
         <Button variant="outline" onClick={() => q.refetch()}>
           Atualizar
+        </Button>
+        <Button variant="outline" onClick={exportar} disabled={!q.data?.length}>
+          <Download className="mr-2 h-4 w-4" /> Exportar CSV
         </Button>
       </div>
 
@@ -142,9 +176,7 @@ function RegistosTab() {
                   <td className="px-3 py-2">{row.vendedor?.nome ?? "—"}</td>
                   <td className="px-3 py-2">
                     {metodoLabel(row.metodo_pagamento as never)}
-                    {row.anulado && (
-                      <span className="ml-2 text-xs text-destructive">anulado</span>
-                    )}
+                    {row.anulado && <span className="ml-2 text-xs text-destructive">anulado</span>}
                     {row.faturado && (
                       <span className="ml-2 text-xs text-emerald-600">faturado</span>
                     )}
@@ -263,9 +295,7 @@ function FechosTab({ isAdmin }: { isAdmin: boolean }) {
                     >
                       {row.estado}
                     </span>
-                    {row.reaberta && (
-                      <span className="ml-2 text-xs text-amber-700">reaberta</span>
-                    )}
+                    {row.reaberta && <span className="ml-2 text-xs text-amber-700">reaberta</span>}
                     {row.num_fechos > 1 && (
                       <span className="ml-2 text-xs text-muted-foreground">
                         · {row.num_fechos} fechos
@@ -390,9 +420,7 @@ function FechoDetalhe({ id, onClose }: { id: string | null; onClose: () => void 
     <Dialog open={!!id} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-2xl print:max-w-none print:shadow-none">
         <DialogHeader>
-          <DialogTitle>
-            Fecho de caixa {d?.caixa.data ? `— ${d.caixa.data}` : ""}
-          </DialogTitle>
+          <DialogTitle>Fecho de caixa {d?.caixa.data ? `— ${d.caixa.data}` : ""}</DialogTitle>
         </DialogHeader>
         {!d ? (
           <div className="text-sm text-muted-foreground">A carregar…</div>
@@ -428,9 +456,7 @@ function FechoDetalhe({ id, onClose }: { id: string | null; onClose: () => void 
                 <tbody className="divide-y">
                   <tr>
                     <td className="px-3 py-1.5 text-muted-foreground">Saldo inicial</td>
-                    <td className="px-3 py-1.5 text-right">
-                      {formatEUR(d.caixa.saldo_inicial)}
-                    </td>
+                    <td className="px-3 py-1.5 text-right">{formatEUR(d.caixa.saldo_inicial)}</td>
                   </tr>
                   <tr>
                     <td className="px-3 py-1.5 text-muted-foreground">
@@ -455,21 +481,15 @@ function FechoDetalhe({ id, onClose }: { id: string | null; onClose: () => void 
                   </tr>
                   <tr>
                     <td className="px-3 py-1.5 text-muted-foreground">Sangrias</td>
-                    <td className="px-3 py-1.5 text-right">
-                      -{formatEUR(d.totais.sangrias)}
-                    </td>
+                    <td className="px-3 py-1.5 text-right">-{formatEUR(d.totais.sangrias)}</td>
                   </tr>
                   <tr>
                     <td className="px-3 py-1.5 text-muted-foreground">Despesas</td>
-                    <td className="px-3 py-1.5 text-right">
-                      -{formatEUR(d.totais.despesas)}
-                    </td>
+                    <td className="px-3 py-1.5 text-right">-{formatEUR(d.totais.despesas)}</td>
                   </tr>
                   <tr className="font-semibold">
                     <td className="px-3 py-2">Saldo esperado</td>
-                    <td className="px-3 py-2 text-right">
-                      {formatEUR(d.totais.saldoEsperado)}
-                    </td>
+                    <td className="px-3 py-2 text-right">{formatEUR(d.totais.saldoEsperado)}</td>
                   </tr>
                   {d.caixa.saldo_final != null && (
                     <tr className="font-semibold">
@@ -477,11 +497,7 @@ function FechoDetalhe({ id, onClose }: { id: string | null; onClose: () => void 
                       <td className="px-3 py-2 text-right">
                         {formatEUR(d.caixa.saldo_final)}
                         <span className="ml-2 text-xs text-muted-foreground">
-                          (dif.{" "}
-                          {formatEUR(
-                            Number(d.caixa.saldo_final) - d.totais.saldoEsperado,
-                          )}
-                          )
+                          (dif. {formatEUR(Number(d.caixa.saldo_final) - d.totais.saldoEsperado)})
                         </span>
                       </td>
                     </tr>
@@ -491,8 +507,7 @@ function FechoDetalhe({ id, onClose }: { id: string | null; onClose: () => void 
             </div>
 
             <div className="text-xs text-muted-foreground">
-              {d.totais.numRegistos} registos ·{" "}
-              {d.saidas.length} saídas
+              {d.totais.numRegistos} registos · {d.saidas.length} saídas
             </div>
           </div>
         )}

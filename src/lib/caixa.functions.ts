@@ -1,12 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { hojePT } from "./date-pt";
 
 // Estado da caixa de hoje
 export const getEstadoCaixa = createServerFn({ method: "GET" }).handler(async () => {
   const { requireSession } = await import("./guard.server");
   await requireSession();
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const hoje = new Date().toISOString().slice(0, 10);
+  const hoje = hojePT();
   const { data: caixa } = await supabaseAdmin
     .from("caixa_diario" as never)
     .select("*")
@@ -71,7 +72,9 @@ export const abrirCaixa = createServerFn({ method: "POST" })
       .object({
         saldo_inicial: z.number().min(0).max(999999),
         vendedor_id: z.string().uuid(),
-        vendedor_password: z.string().regex(/^\d{4}$/, "A password do vendedor deve ter 4 dígitos."),
+        vendedor_password: z
+          .string()
+          .regex(/^\d{4}$/, "A password do vendedor deve ter 4 dígitos."),
       })
       .parse(d),
   )
@@ -87,7 +90,7 @@ export const abrirCaixa = createServerFn({ method: "POST" })
     if (vErr) throw new Error(vErr.message);
     if (!okVend) throw new Error("Vendedor ou password incorretos.");
 
-    const hoje = new Date().toISOString().slice(0, 10);
+    const hoje = hojePT();
     const { data: existente } = await supabaseAdmin
       .from("caixa_diario" as never)
       .select("id")
@@ -114,7 +117,9 @@ export const fecharCaixa = createServerFn({ method: "POST" })
       .object({
         saldo_final: z.number().min(0).max(9999999),
         vendedor_id: z.string().uuid(),
-        vendedor_password: z.string().regex(/^\d{4}$/, "A password do vendedor deve ter 4 dígitos."),
+        vendedor_password: z
+          .string()
+          .regex(/^\d{4}$/, "A password do vendedor deve ter 4 dígitos."),
       })
       .parse(d),
   )
@@ -130,7 +135,7 @@ export const fecharCaixa = createServerFn({ method: "POST" })
     if (vErr) throw new Error(vErr.message);
     if (!okVend) throw new Error("Vendedor ou password incorretos.");
 
-    const hoje = new Date().toISOString().slice(0, 10);
+    const hoje = hojePT();
     const { data: caixa } = await supabaseAdmin
       .from("caixa_diario" as never)
       .select("id, num_fechos, reaberta")
@@ -161,8 +166,14 @@ export const listCaixas = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) =>
     z
       .object({
-        de: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-        ate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+        de: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/)
+          .optional(),
+        ate: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/)
+          .optional(),
       })
       .parse(d),
   )
@@ -203,7 +214,9 @@ export const getCaixaDetalhe = createServerFn({ method: "GET" })
     const c = caixa as { id: string; saldo_inicial: number };
     const { data: registos } = await supabaseAdmin
       .from("registos" as never)
-      .select("id, numero, total, metodo_pagamento, anulado, created_at, vendedor:utilizadores!vendedor_id(nome), clientes(nome)")
+      .select(
+        "id, numero, total, metodo_pagamento, anulado, created_at, vendedor:utilizadores!vendedor_id(nome), clientes(nome)",
+      )
       .eq("caixa_diario_id", c.id)
       .order("numero", { ascending: true });
     const { data: saidas } = await supabaseAdmin
@@ -249,7 +262,12 @@ export const getCaixaDetalhe = createServerFn({ method: "GET" })
     }
     const saldoEsperado =
       Number(c.saldo_inicial) + totais.dinheiro - totais.sangrias - totais.despesas;
-    return { caixa, totais: { ...totais, saldoEsperado }, registos: registos ?? [], saidas: saidas ?? [] };
+    return {
+      caixa,
+      totais: { ...totais, saldoEsperado },
+      registos: registos ?? [],
+      saidas: saidas ?? [],
+    };
   });
 
 export const reabrirCaixa = createServerFn({ method: "POST" })
@@ -304,7 +322,9 @@ export const registarSaida = createServerFn({ method: "POST" })
         descricao: z.string().trim().min(1).max(200),
         valor: z.number().positive().max(999999),
         vendedor_id: z.string().uuid(),
-        vendedor_password: z.string().regex(/^\d{4}$/, "A password do vendedor deve ter 4 dígitos."),
+        vendedor_password: z
+          .string()
+          .regex(/^\d{4}$/, "A password do vendedor deve ter 4 dígitos."),
       })
       .parse(d),
   )
@@ -320,7 +340,7 @@ export const registarSaida = createServerFn({ method: "POST" })
     if (vErr) throw new Error(vErr.message);
     if (!okVend) throw new Error("Vendedor ou password incorretos.");
 
-    const hoje = new Date().toISOString().slice(0, 10);
+    const hoje = hojePT();
     const { data: caixa } = await supabaseAdmin
       .from("caixa_diario" as never)
       .select("id")
@@ -343,7 +363,7 @@ export const listSaidasHoje = createServerFn({ method: "GET" }).handler(async ()
   const { requireSession } = await import("./guard.server");
   await requireSession();
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const hoje = new Date().toISOString().slice(0, 10);
+  const hoje = hojePT();
   const { data: caixa } = await supabaseAdmin
     .from("caixa_diario" as never)
     .select("id")

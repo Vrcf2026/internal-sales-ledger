@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { hojePT } from "./date-pt";
 
 const METODOS = ["dinheiro", "multibanco", "mbway"] as const;
 
@@ -30,7 +31,7 @@ export const registarPagamento = createServerFn({ method: "POST" })
     if (vErr) throw new Error(vErr.message);
     if (!okVend) throw new Error("Vendedor ou password incorretos.");
 
-    const hoje = new Date().toISOString().slice(0, 10);
+    const hoje = hojePT();
     const { data: caixa } = await supabaseAdmin
       .from("caixa_diario" as never)
       .select("id")
@@ -62,10 +63,7 @@ export const registarPagamento = createServerFn({ method: "POST" })
       .from("pagamentos" as never)
       .select("valor")
       .eq("registo_id", r.id);
-    const jaPago = (pagos ?? []).reduce(
-      (a, p) => a + Number((p as { valor: number }).valor),
-      0,
-    );
+    const jaPago = (pagos ?? []).reduce((a, p) => a + Number((p as { valor: number }).valor), 0);
     const emDivida = Number(r.total) - jaPago;
     if (emDivida <= 0) throw new Error("Esta venda já está totalmente liquidada.");
     if (data.valor > emDivida + 0.001)
@@ -112,15 +110,22 @@ export const listContaCorrente = createServerFn({ method: "GET" }).handler(async
     .order("data", { ascending: false });
   if (error) throw new Error(error.message);
 
-  const rows: ContaCorrenteRegisto[] = ((regs ?? []) as unknown as Array<{
-    id: string;
-    numero: number;
-    data: string;
-    total: number;
-    descricao: string | null;
-    clientes: { id: string; nome: string | null; nif: string | null; telefone: string | null } | null;
-    pagamentos: { valor: number }[] | null;
-  }>).map((r) => {
+  const rows: ContaCorrenteRegisto[] = (
+    (regs ?? []) as unknown as Array<{
+      id: string;
+      numero: number;
+      data: string;
+      total: number;
+      descricao: string | null;
+      clientes: {
+        id: string;
+        nome: string | null;
+        nif: string | null;
+        telefone: string | null;
+      } | null;
+      pagamentos: { valor: number }[] | null;
+    }>
+  ).map((r) => {
     const pago = (r.pagamentos ?? []).reduce((a, p) => a + Number(p.valor), 0);
     return {
       id: r.id,
@@ -145,7 +150,9 @@ export const listPagamentosRegisto = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows, error } = await supabaseAdmin
       .from("pagamentos" as never)
-      .select("*, vendedor:utilizadores!vendedor_id(nome), operador:utilizadores!utilizador_id(nome)")
+      .select(
+        "*, vendedor:utilizadores!vendedor_id(nome), operador:utilizadores!utilizador_id(nome)",
+      )
       .eq("registo_id", data.registo_id)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);

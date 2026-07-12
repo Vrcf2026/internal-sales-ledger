@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { hojePT } from "./date-pt";
 
 const itemSchema = z.object({
   catalogo_id: z.string().uuid().nullable().optional(),
@@ -25,7 +26,6 @@ const criarSchema = z.object({
   itens: z.array(itemSchema).min(1).max(200),
 });
 
-
 export const criarRegisto = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => criarSchema.parse(d))
   .handler(async ({ data }) => {
@@ -49,8 +49,7 @@ export const criarRegisto = createServerFn({ method: "POST" })
         throw new Error("Vendas a crédito exigem cliente identificado.");
     }
 
-
-    const hoje = new Date().toISOString().slice(0, 10);
+    const hoje = hojePT();
     const { data: caixa } = await supabaseAdmin
       .from("caixa_diario" as never)
       .select("id")
@@ -82,6 +81,7 @@ export const criarRegisto = createServerFn({ method: "POST" })
     const { data: reg, error: regErr } = await supabaseAdmin
       .from("registos" as never)
       .insert({
+        data: hoje,
         caixa_diario_id: (caixa as { id: string }).id,
         utilizador_id: s.userId,
         vendedor_id: data.vendedor_id,
@@ -120,7 +120,7 @@ export const listRegistosHoje = createServerFn({ method: "GET" }).handler(async 
   const { requireSession } = await import("../lib/guard.server");
   await requireSession();
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const hoje = new Date().toISOString().slice(0, 10);
+  const hoje = hojePT();
   const { data, error } = await supabaseAdmin
     .from("registos" as never)
     .select(
@@ -137,8 +137,14 @@ export const listRegistos = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) =>
     z
       .object({
-        de: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-        ate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+        de: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/)
+          .optional(),
+        ate: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/)
+          .optional(),
         numero: z.number().int().positive().optional().nullable(),
         limite: z.number().int().min(1).max(500).optional(),
       })

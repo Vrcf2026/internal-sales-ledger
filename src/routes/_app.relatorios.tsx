@@ -2,11 +2,14 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { me } from "@/lib/auth.functions";
+import { diasAtrasPT } from "@/lib/date-pt";
 import { relatorioIntervalo } from "@/lib/relatorios.functions";
 import { formatEUR } from "@/lib/format";
+import { exportCSV } from "@/lib/csv-export";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Download } from "lucide-react";
 
 export const Route = createFileRoute("/_app/relatorios")({
   beforeLoad: async () => {
@@ -16,15 +19,9 @@ export const Route = createFileRoute("/_app/relatorios")({
   component: RelatoriosPage,
 });
 
-function isoDaysAgo(n: number) {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return d.toISOString().slice(0, 10);
-}
-
 function RelatoriosPage() {
-  const [de, setDe] = useState(isoDaysAgo(6));
-  const [ate, setAte] = useState(isoDaysAgo(0));
+  const [de, setDe] = useState(diasAtrasPT(6));
+  const [ate, setAte] = useState(diasAtrasPT(0));
   const [intervalo, setIntervalo] = useState({ de, ate });
 
   const q = useQuery({
@@ -33,6 +30,35 @@ function RelatoriosPage() {
   });
 
   const t = q.data?.totais;
+
+  function exportar() {
+    const linhasResumo: (string | number)[][] = [
+      ["Resumo do intervalo", "", ""],
+      ["Registos", t?.numRegistos ?? 0, ""],
+      ["Total", (t?.total ?? 0).toFixed(2).replace(".", ","), "€"],
+      ["Dinheiro", (t?.dinheiro ?? 0).toFixed(2).replace(".", ","), "€"],
+      ["Multibanco", (t?.multibanco ?? 0).toFixed(2).replace(".", ","), "€"],
+      ["MB Way", (t?.mbway ?? 0).toFixed(2).replace(".", ","), "€"],
+      ["Crédito", (t?.credito ?? 0).toFixed(2).replace(".", ","), "€"],
+      ["Sangrias", (q.data?.totalSangrias ?? 0).toFixed(2).replace(".", ","), "€"],
+      ["Despesas", (q.data?.totalDespesas ?? 0).toFixed(2).replace(".", ","), "€"],
+      ["", "", ""],
+      ["Fecho de caixa por dia", "", ""],
+    ];
+    const linhasCaixas = (q.data?.caixas ?? []).map((c) => {
+      const row = c as { data: string; saldo_inicial: number; saldo_final: number | null };
+      return [
+        row.data,
+        row.saldo_inicial.toFixed(2).replace(".", ","),
+        row.saldo_final == null ? "em aberto" : row.saldo_final.toFixed(2).replace(".", ","),
+      ];
+    });
+    exportCSV(
+      `relatorio_${de}_a_${ate}.csv`,
+      ["Relatório", "Valor", "Unidade"],
+      [...linhasResumo, ["Data", "Saldo inicial (€)", "Saldo final (€)"], ...linhasCaixas],
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -53,6 +79,9 @@ function RelatoriosPage() {
           <Input type="date" value={ate} onChange={(e) => setAte(e.target.value)} />
         </div>
         <Button onClick={() => setIntervalo({ de, ate })}>Aplicar</Button>
+        <Button variant="outline" onClick={exportar} disabled={!q.data}>
+          <Download className="mr-2 h-4 w-4" /> Exportar CSV
+        </Button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
