@@ -37,9 +37,18 @@ export const login = createServerFn({ method: "POST" })
     const u = user as {
       id: string;
       nome: string;
-      papel: "admin" | "operador";
+      papel: "admin" | "operador" | "vendedor";
       deve_trocar_password: boolean;
     };
+
+    // Vendedores não têm acesso à aplicação — servem apenas para confirmar a
+    // sua identidade com PIN de 4 dígitos em ações pontuais (venda, saída de
+    // caixa, abertura/fecho). Um PIN de 4 dígitos é demasiado fraco para
+    // proteger uma sessão completa com acesso ao registo de vendas.
+    if (u.papel === "vendedor") {
+      throw new Error("Este utilizador não pode iniciar sessão na aplicação.");
+    }
+
     const session = await useSession<AppSession>(sessionConfig);
     await session.update({ userId: u.id, nome: u.nome, papel: u.papel });
     return {

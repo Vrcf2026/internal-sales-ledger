@@ -54,6 +54,13 @@ export const deleteCliente = createServerFn({ method: "POST" })
     const { requireSession } = await import("../lib/guard.server");
     await requireSession();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { count } = await supabaseAdmin
+      .from("registos" as never)
+      .select("id", { count: "exact", head: true })
+      .eq("cliente_id", data.id);
+    if (count && count > 0) {
+      throw new Error(`Este cliente tem ${count} venda(s) associada(s) e não pode ser eliminado.`);
+    }
     const { error } = await supabaseAdmin
       .from("clientes" as never)
       .delete()

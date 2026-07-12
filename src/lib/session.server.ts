@@ -2,7 +2,7 @@
 export type AppSession = {
   userId?: string;
   nome?: string;
-  papel?: "admin" | "operador";
+  papel?: "admin" | "operador" | "vendedor";
 };
 
 export const sessionConfig = {
