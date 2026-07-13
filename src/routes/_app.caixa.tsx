@@ -66,9 +66,7 @@ function CaixaPage() {
 
   const vendedorAtual = useMemo(
     () =>
-      ((vendedores.data ?? []) as { id: string; nome: string }[]).find(
-        (v) => v.id === vendedorId,
-      ),
+      ((vendedores.data ?? []) as { id: string; nome: string }[]).find((v) => v.id === vendedorId),
     [vendedores.data, vendedorId],
   );
 

@@ -162,7 +162,10 @@ function UtilizadoresPage() {
               </div>
               <div className="space-y-1.5">
                 <Label>Papel</Label>
-                <Select value={papel} onValueChange={(v) => setPapel(v as "admin" | "operador" | "vendedor")}>
+                <Select
+                  value={papel}
+                  onValueChange={(v) => setPapel(v as "admin" | "operador" | "vendedor")}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>

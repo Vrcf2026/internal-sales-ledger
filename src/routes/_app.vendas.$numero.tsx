@@ -80,9 +80,7 @@ function TalaoPage() {
 
   const [editando, setEditando] = useState(false);
   const [linhas, setLinhas] = useState<Linha[]>([]);
-  const [metodo, setMetodo] = useState<"dinheiro" | "multibanco" | "mbway" | "credito">(
-    "dinheiro",
-  );
+  const [metodo, setMetodo] = useState<"dinheiro" | "multibanco" | "mbway" | "credito">("dinheiro");
   const [vendedorId, setVendedorId] = useState("");
   const [clienteId, setClienteId] = useState("");
   const [descricao, setDescricao] = useState("");

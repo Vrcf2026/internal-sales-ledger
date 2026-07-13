@@ -81,9 +81,7 @@ function VendasPage() {
   }
 
   const [linhas, setLinhas] = useState<Linha[]>([novaLinha()]);
-  const [metodo, setMetodo] = useState<"dinheiro" | "multibanco" | "mbway" | "credito">(
-    "dinheiro",
-  );
+  const [metodo, setMetodo] = useState<"dinheiro" | "multibanco" | "mbway" | "credito">("dinheiro");
   const [vendedorId, setVendedorId] = useState<string>("");
   const [vendedorPin, setVendedorPin] = useState<string>("");
   const [clienteId, setClienteId] = useState<string>("");
@@ -109,9 +107,7 @@ function VendasPage() {
 
   const vendedorAtual = useMemo(
     () =>
-      ((vendedores.data ?? []) as { id: string; nome: string }[]).find(
-        (v) => v.id === vendedorId,
-      ),
+      ((vendedores.data ?? []) as { id: string; nome: string }[]).find((v) => v.id === vendedorId),
     [vendedores.data, vendedorId],
   );
 
@@ -237,7 +233,6 @@ function VendasPage() {
       setSaving(false);
     }
   }
-
 
   if (emDetalhe) {
     return <Outlet />;

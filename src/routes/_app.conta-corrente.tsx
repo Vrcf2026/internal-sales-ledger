@@ -74,9 +74,7 @@ function ContaCorrentePage() {
 
   const vendedorAtual = useMemo(
     () =>
-      ((vendedores.data ?? []) as { id: string; nome: string }[]).find(
-        (v) => v.id === vendedorId,
-      ),
+      ((vendedores.data ?? []) as { id: string; nome: string }[]).find((v) => v.id === vendedorId),
     [vendedores.data, vendedorId],
   );
 
@@ -136,9 +134,7 @@ function ContaCorrentePage() {
       g.saldo += r.saldo;
       g.registos.push(r);
     }
-    return [...m.values()]
-      .filter((g) => g.saldo > 0.001)
-      .sort((a, b) => b.saldo - a.saldo);
+    return [...m.values()].filter((g) => g.saldo > 0.001).sort((a, b) => b.saldo - a.saldo);
   }, [q.data]);
 
   function abrirPagamento(r: ContaCorrenteRegisto) {
@@ -273,9 +269,7 @@ function ContaCorrentePage() {
       <Dialog open={pagOpen} onOpenChange={setPagOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              Registar pagamento {alvo ? `— Registo #${alvo.numero}` : ""}
-            </DialogTitle>
+            <DialogTitle>Registar pagamento {alvo ? `— Registo #${alvo.numero}` : ""}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             {alvo && (
