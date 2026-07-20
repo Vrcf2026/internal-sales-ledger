@@ -20,7 +20,13 @@ export const Route = createFileRoute("/_app/clientes")({
   component: ClientesPage,
 });
 
-type Cliente = { id?: string; nome: string; nif: string; telefone: string };
+type Cliente = {
+  id?: string;
+  nome: string;
+  nif: string;
+  telefone: string;
+  linha_preco: 1 | 2;
+};
 
 function ClientesPage() {
   const qc = useQueryClient();
@@ -28,10 +34,10 @@ function ClientesPage() {
   const upsert = useServerFn(upsertCliente);
   const del = useServerFn(deleteCliente);
   const [open, setOpen] = useState(false);
-  const [c, setC] = useState<Cliente>({ nome: "", nif: "", telefone: "" });
+  const [c, setC] = useState<Cliente>({ nome: "", nif: "", telefone: "", linha_preco: 1 });
 
   function novo() {
-    setC({ nome: "", nif: "", telefone: "" });
+    setC({ nome: "", nif: "", telefone: "", linha_preco: 1 });
     setOpen(true);
   }
   function editar(row: Cliente & { id: string }) {
@@ -40,6 +46,7 @@ function ClientesPage() {
       nome: row.nome ?? "",
       nif: row.nif ?? "",
       telefone: row.telefone ?? "",
+      linha_preco: (row.linha_preco === 2 ? 2 : 1) as 1 | 2,
     });
     setOpen(true);
   }
