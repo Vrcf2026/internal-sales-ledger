@@ -18,6 +18,7 @@ const schema = z.object({
   nome: z.string().trim().max(120).optional().nullable(),
   nif: z.string().trim().max(20).optional().nullable(),
   telefone: z.string().trim().max(30).optional().nullable(),
+  linha_preco: z.union([z.literal(1), z.literal(2)]).default(1),
 });
 
 export const upsertCliente = createServerFn({ method: "POST" })
@@ -30,6 +31,7 @@ export const upsertCliente = createServerFn({ method: "POST" })
       nome: data.nome || null,
       nif: data.nif || null,
       telefone: data.telefone || null,
+      linha_preco: data.linha_preco ?? 1,
     };
     if (data.id) {
       const { error } = await supabaseAdmin

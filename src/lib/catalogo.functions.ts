@@ -22,6 +22,7 @@ const itemSchema = z.object({
   nome: z.string().trim().min(1).max(120),
   tipo: z.enum(["produto", "servico"]),
   preco: z.number().min(0).max(999999),
+  preco2: z.number().min(0).max(999999).default(0),
   unidade: z.string().trim().max(20).default("unidade"),
   ativo: z.boolean().default(true),
 });
@@ -39,6 +40,7 @@ export const upsertCatalogo = createServerFn({ method: "POST" })
           nome: data.nome,
           tipo: data.tipo,
           preco: data.preco,
+          preco2: data.preco2,
           unidade: data.unidade,
           ativo: data.ativo,
         } as never)
@@ -49,6 +51,7 @@ export const upsertCatalogo = createServerFn({ method: "POST" })
         nome: data.nome,
         tipo: data.tipo,
         preco: data.preco,
+        preco2: data.preco2,
         unidade: data.unidade,
         ativo: data.ativo,
       } as never);
