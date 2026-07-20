@@ -38,6 +38,7 @@ type Item = {
   nome: string;
   tipo: "produto" | "servico";
   preco: number;
+  preco2: number;
   unidade: string;
   ativo: boolean;
 };
@@ -53,17 +54,18 @@ function CatalogoPage() {
     nome: "",
     tipo: "produto",
     preco: 0,
+    preco2: 0,
     unidade: "unidade",
     ativo: true,
   });
 
   function abrirNovo() {
-    setItem({ nome: "", tipo: "produto", preco: 0, unidade: "unidade", ativo: true });
+    setItem({ nome: "", tipo: "produto", preco: 0, preco2: 0, unidade: "unidade", ativo: true });
     setOpen(true);
   }
 
   function abrirEditar(row: Item) {
-    setItem({ ...row });
+    setItem({ ...row, preco2: row.preco2 ?? 0 });
     setOpen(true);
   }
 
@@ -136,15 +138,27 @@ function CatalogoPage() {
                   />
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <Label>Preço (€)</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={item.preco}
-                  onChange={(e) => setItem({ ...item, preco: Number(e.target.value) })}
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Preço 1 (€)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={item.preco}
+                    onChange={(e) => setItem({ ...item, preco: Number(e.target.value) })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Preço 2 (€)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={item.preco2}
+                    onChange={(e) => setItem({ ...item, preco2: Number(e.target.value) })}
+                  />
+                </div>
               </div>
               <label className="flex items-center gap-2 text-sm">
                 <input
