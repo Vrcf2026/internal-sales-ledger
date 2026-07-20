@@ -180,10 +180,11 @@ function CatalogoPage() {
       </div>
 
       <div className="rounded-lg border bg-card">
-        <div className="hidden md:grid grid-cols-[1fr_100px_100px_120px_140px] gap-2 px-4 py-2 text-xs uppercase tracking-wider text-muted-foreground border-b">
+        <div className="hidden md:grid grid-cols-[1fr_100px_100px_100px_120px_140px] gap-2 px-4 py-2 text-xs uppercase tracking-wider text-muted-foreground border-b">
           <div>Nome</div>
           <div>Tipo</div>
-          <div className="text-right">Preço</div>
+          <div className="text-right">Preço 1</div>
+          <div className="text-right">Preço 2</div>
           <div>Unidade</div>
           <div className="text-right">Ações</div>
         </div>
@@ -193,7 +194,7 @@ function CatalogoPage() {
             return (
               <div
                 key={r.id}
-                className="grid grid-cols-1 md:grid-cols-[1fr_100px_100px_120px_140px] gap-2 px-4 py-2 items-center text-sm"
+                className="grid grid-cols-1 md:grid-cols-[1fr_100px_100px_100px_120px_140px] gap-2 px-4 py-2 items-center text-sm"
               >
                 <div>
                   <span className={r.ativo ? "" : "text-muted-foreground line-through"}>
@@ -204,6 +205,7 @@ function CatalogoPage() {
                   {r.tipo}
                 </div>
                 <div className="text-right font-medium">{formatEUR(r.preco)}</div>
+                <div className="text-right text-muted-foreground">{formatEUR(r.preco2 ?? 0)}</div>
                 <div className="text-muted-foreground">{r.unidade}</div>
                 <div className="flex gap-2 justify-end">
                   <Button size="sm" variant="outline" onClick={() => abrirEditar(r)}>
