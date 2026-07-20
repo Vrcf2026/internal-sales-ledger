@@ -7,6 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogFooter,
@@ -20,7 +27,13 @@ export const Route = createFileRoute("/_app/clientes")({
   component: ClientesPage,
 });
 
-type Cliente = { id?: string; nome: string; nif: string; telefone: string };
+type Cliente = {
+  id?: string;
+  nome: string;
+  nif: string;
+  telefone: string;
+  linha_preco: 1 | 2;
+};
 
 function ClientesPage() {
   const qc = useQueryClient();
@@ -28,10 +41,10 @@ function ClientesPage() {
   const upsert = useServerFn(upsertCliente);
   const del = useServerFn(deleteCliente);
   const [open, setOpen] = useState(false);
-  const [c, setC] = useState<Cliente>({ nome: "", nif: "", telefone: "" });
+  const [c, setC] = useState<Cliente>({ nome: "", nif: "", telefone: "", linha_preco: 1 });
 
   function novo() {
-    setC({ nome: "", nif: "", telefone: "" });
+    setC({ nome: "", nif: "", telefone: "", linha_preco: 1 });
     setOpen(true);
   }
   function editar(row: Cliente & { id: string }) {
@@ -40,6 +53,7 @@ function ClientesPage() {
       nome: row.nome ?? "",
       nif: row.nif ?? "",
       telefone: row.telefone ?? "",
+      linha_preco: (row.linha_preco === 2 ? 2 : 1) as 1 | 2,
     });
     setOpen(true);
   }
@@ -94,6 +108,24 @@ function ClientesPage() {
                   onChange={(e) => setC({ ...c, telefone: e.target.value })}
                 />
               </div>
+              <div className="space-y-1.5">
+                <Label>Linha de preço</Label>
+                <Select
+                  value={String(c.linha_preco)}
+                  onValueChange={(v) => setC({ ...c, linha_preco: (v === "2" ? 2 : 1) as 1 | 2 })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">Preço 1</SelectItem>
+                    <SelectItem value="2">Preço 2</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Preço usado por omissão nas vendas deste cliente.
+                </p>
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>
@@ -106,10 +138,11 @@ function ClientesPage() {
       </div>
 
       <div className="rounded-lg border bg-card">
-        <div className="hidden md:grid grid-cols-[1fr_140px_160px_120px] gap-2 px-4 py-2 text-xs uppercase tracking-wider text-muted-foreground border-b">
+        <div className="hidden md:grid grid-cols-[1fr_140px_160px_100px_120px] gap-2 px-4 py-2 text-xs uppercase tracking-wider text-muted-foreground border-b">
           <div>Nome</div>
           <div>NIF</div>
           <div>Telefone</div>
+          <div>Linha</div>
           <div className="text-right">Ações</div>
         </div>
         <div className="divide-y">
@@ -119,15 +152,18 @@ function ClientesPage() {
               nome: string | null;
               nif: string | null;
               telefone: string | null;
+              linha_preco: number | null;
             };
+            const linha = (r.linha_preco === 2 ? 2 : 1) as 1 | 2;
             return (
               <div
                 key={r.id}
-                className="grid grid-cols-1 md:grid-cols-[1fr_140px_160px_120px] gap-2 px-4 py-2 items-center text-sm"
+                className="grid grid-cols-1 md:grid-cols-[1fr_140px_160px_100px_120px] gap-2 px-4 py-2 items-center text-sm"
               >
                 <div>{r.nome || <span className="text-muted-foreground">—</span>}</div>
                 <div className="text-muted-foreground">{r.nif || "—"}</div>
                 <div className="text-muted-foreground">{r.telefone || "—"}</div>
+                <div className="text-muted-foreground">Preço {linha}</div>
                 <div className="flex gap-2 justify-end">
                   <Button
                     size="sm"
@@ -138,6 +174,7 @@ function ClientesPage() {
                         nome: r.nome ?? "",
                         nif: r.nif ?? "",
                         telefone: r.telefone ?? "",
+                        linha_preco: linha,
                       })
                     }
                   >

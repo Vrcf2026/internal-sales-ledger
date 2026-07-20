@@ -94,6 +94,7 @@ export type Database = {
           id: string
           nome: string
           preco: number
+          preco2: number
           tipo: string
           unidade: string | null
         }
@@ -103,6 +104,7 @@ export type Database = {
           id?: string
           nome: string
           preco?: number
+          preco2?: number
           tipo: string
           unidade?: string | null
         }
@@ -112,6 +114,7 @@ export type Database = {
           id?: string
           nome?: string
           preco?: number
+          preco2?: number
           tipo?: string
           unidade?: string | null
         }
@@ -120,18 +123,21 @@ export type Database = {
       clientes: {
         Row: {
           id: string
+          linha_preco: number
           nif: string | null
           nome: string | null
           telefone: string | null
         }
         Insert: {
           id?: string
+          linha_preco?: number
           nif?: string | null
           nome?: string | null
           telefone?: string | null
         }
         Update: {
           id?: string
+          linha_preco?: number
           nif?: string | null
           nome?: string | null
           telefone?: string | null

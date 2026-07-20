@@ -120,16 +120,46 @@ function VendasPage() {
     setLinhas((ls) => ls.map((l) => (l.key === key ? { ...l, ...patch } : l)));
   }
 
+  const clienteAtual = useMemo(
+    () =>
+      ((clientes.data ?? []) as { id: string; linha_preco: number | null }[]).find(
+        (c) => c.id === clienteId,
+      ),
+    [clientes.data, clienteId],
+  );
+  const linhaPreco: 1 | 2 = clienteAtual?.linha_preco === 2 ? 2 : 1;
+
+  function precoDoProduto(p: { preco: number; preco2: number | null }): number {
+    if (linhaPreco === 2 && Number(p.preco2) > 0) return Number(p.preco2);
+    return Number(p.preco);
+  }
+
   function escolheProduto(key: string, catId: string) {
     const p = (catalogo.data ?? []).find((c) => (c as { id: string }).id === catId) as
-      { id: string; nome: string; preco: number } | undefined;
+      | { id: string; nome: string; preco: number; preco2: number | null }
+      | undefined;
     if (!p) return;
     atualizaLinha(key, {
       catalogo_id: p.id,
       descricao: p.nome,
-      preco_unitario: Number(p.preco),
+      preco_unitario: precoDoProduto(p),
     });
   }
+
+  // Ao trocar de cliente, re-preçar linhas ligadas ao catálogo (mantendo qtd)
+  useEffect(() => {
+    setLinhas((ls) =>
+      ls.map((l) => {
+        if (!l.catalogo_id) return l;
+        const p = (catalogo.data ?? []).find((c) => (c as { id: string }).id === l.catalogo_id) as
+          | { preco: number; preco2: number | null }
+          | undefined;
+        if (!p) return l;
+        return { ...l, preco_unitario: precoDoProduto(p) };
+      }),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linhaPreco]);
 
   async function confirmarAcessoVendedor() {
     if (!accessVendedorId) {
@@ -290,11 +320,13 @@ function VendasPage() {
                           id: string;
                           nome: string;
                           preco: number;
+                          preco2: number | null;
                           unidade: string;
                         };
+                        const preco = precoDoProduto(row);
                         return (
                           <SelectItem key={row.id} value={row.id}>
-                            {row.nome} — {formatEUR(row.preco)}
+                            {row.nome} — {formatEUR(preco)}
                           </SelectItem>
                         );
                       })}
