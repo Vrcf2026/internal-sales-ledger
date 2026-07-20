@@ -320,11 +320,13 @@ function VendasPage() {
                           id: string;
                           nome: string;
                           preco: number;
+                          preco2: number | null;
                           unidade: string;
                         };
+                        const preco = precoDoProduto(row);
                         return (
                           <SelectItem key={row.id} value={row.id}>
-                            {row.nome} — {formatEUR(row.preco)}
+                            {row.nome} — {formatEUR(preco)}
                           </SelectItem>
                         );
                       })}
